@@ -38,7 +38,7 @@ app.post("/api/dream/analyze", async (req, res) => {
     if (analysis.videoPrompt) {
       const [imageResult, videoResult] = await Promise.allSettled([
         generateImage(analysis.videoPrompt, theme),
-        createVideoTask(analysis.videoPrompt),
+        createVideoTask(analysis.videoPrompt, theme),
       ]);
 
       if (imageResult.status === "fulfilled") {

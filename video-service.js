@@ -111,8 +111,14 @@ async function generateImage(prompt, theme = 'dark') {
 }
 
 // ===== REPLICATE: ЗАПУСК ВИДЕО (MiniMax Video-01 — text-to-video) =====
-async function createVideoTask(videoPrompt) {
+async function createVideoTask(videoPrompt, theme = 'dark') {
   console.log("🎬 Генерирую видео через MiniMax Video-01...");
+
+  const themeVideoStyle = theme === 'light'
+    ? 'Soft dreamy pastel cinematic video, slow gentle motion, airy warm atmosphere, translucent glowing ethereal forms drifting softly, cream and lavender gradient tones, bokeh particles, watercolor-like textures, peaceful spiritual mood, slow camera float. '
+    : 'Surreal mystical dreamscape cinematic video, slow epic camera movement, deep purples and midnight blues with golden light rays, magical atmospheric fog, cinematic quality, ethereal particles floating. ';
+
+  const finalPrompt = themeVideoStyle + sanitizePrompt(videoPrompt);
 
   const response = await fetch(
     "https://api.replicate.com/v1/models/minimax/video-01/predictions",
@@ -124,7 +130,7 @@ async function createVideoTask(videoPrompt) {
       },
       body: JSON.stringify({
         input: {
-          prompt: videoPrompt,
+          prompt: finalPrompt,
         },
       }),
     }
