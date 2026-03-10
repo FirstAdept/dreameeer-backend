@@ -34,7 +34,7 @@ async function analyzeDream(dreamText) {
   ],
   "interpretation": "Общее толкование сна (3-5 предложений).",
   "recommendation": "Практический совет на основе сна (1-2 предложения)",
-  "videoPrompt": "Surreal dreamscape in Salvador Dali style. [описание сцены на английском, 2-3 предложения]. Impossible architecture, ethereal lighting, deep purples and midnight blues with golden accents, hyper-detailed, mystical atmosphere, cinematic.",
+  "videoPrompt": "ВАЖНО: промпт должен быть безопасным для DALL-E — только абстрактные символы, пейзажи, предметы и существа. БЕЗ людей, БЕЗ детей, БЕЗ лиц, БЕЗ насилия, БЕЗ реальных мест. Пример: 'A surreal floating palace above violet clouds, golden carriage pulled by ethereal horses made of light, mystical garden with glowing flowers, dreamlike atmosphere.' Опиши сцену через символы и образы на английском (2-3 предложения).",
   "lucidityScore": число от 1 до 10,
   "emotionalTone": "основная эмоция сна"
 }`;
@@ -53,13 +53,33 @@ async function analyzeDream(dreamText) {
   return JSON.parse(completion.choices[0].message.content);
 }
 
+// ===== САНИТИЗАЦИЯ ПРОМПТА =====
+function sanitizePrompt(prompt) {
+  // Заменяем упоминания людей и чувствительного контента на абстрактные образы
+  const replacements = [
+    [/\b(child|children|kid|kids|baby|infant|boy|girl|toddler)\b/gi, "small glowing spirit"],
+    [/\b(man|men|woman|women|person|people|human|face|faces)\b/gi, "ethereal silhouette"],
+    [/\b(mother|father|parent|parents|family|grandma|grandpa)\b/gi, "ancient spirit guardian"],
+    [/\b(kindergarten|school|hospital|prison|church)\b/gi, "mystical palace"],
+    [/\b(blood|weapon|gun|knife|sword|death|dead|kill|war)\b/gi, "crimson mist"],
+    [/\b(nude|naked|sexual|intimate)\b/gi, "flowing ethereal form"],
+  ];
+
+  let safe = prompt;
+  for (const [pattern, replacement] of replacements) {
+    safe = safe.replace(pattern, replacement);
+  }
+  return safe;
+}
+
 // ===== DALL-E 3: ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЯ =====
 async function generateImage(prompt) {
   const client = new OpenAI({ apiKey: OPENAI_API_KEY });
   console.log("🎨 Генерирую изображение через DALL-E 3...");
 
+  const cleaned = sanitizePrompt(prompt);
   // Безопасная обёртка для промпта — абстрактный сюрреализм без конкретных людей
-  const safePrompt = `Abstract surreal dream artwork, symbolic and ethereal, no real people, no children, no faces. Dreamlike atmosphere with symbolic imagery: ${prompt}. Style: Salvador Dali surrealism, painterly, mystical, deep purples and midnight blues with golden light, safe for all audiences.`;
+  const safePrompt = `Abstract surreal dream artwork, symbolic and ethereal, no real people, no children, no faces. Dreamlike atmosphere with symbolic imagery: ${cleaned}. Style: Salvador Dali surrealism, painterly, mystical, deep purples and midnight blues with golden light, safe for all audiences.`;
 
   const response = await client.images.generate({
     model: "dall-e-3",
