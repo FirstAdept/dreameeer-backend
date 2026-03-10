@@ -1,0 +1,144 @@
+require("dotenv").config();
+const OpenAI = require("openai");
+
+// ===== КОНФИГУРАЦИЯ =====
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
+const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY || "";
+
+// ===== OPENAI: АНАЛИЗ СНА =====
+async function analyzeDream(dreamText) {
+  const client = new OpenAI({ apiKey: OPENAI_API_KEY });
+
+  const systemPrompt = `Ты — Dreameeer, мистический ИИ-толкователь снов. Ты сочетаешь мудрость классических сонников (Миллер, Фрейд, Юнг, Ванга) с современной психологией.
+
+ТВОЯ ЗАДАЧА:
+1. Получить описание сна
+2. Выделить ключевые символы (3-7 штук)
+3. Дать глубокую интерпретацию каждого символа
+4. Составить общее толкование
+5. Дать практическую рекомендацию
+6. Создать промт для визуализации сна
+
+СТИЛЬ: мистический, тёплый, мудрый. Не пугай пользователя, даже если символы тревожные.
+
+ОБЯЗАТЕЛЬНО верни JSON строго в таком формате:
+{
+  "dreamTitle": "Краткое поэтичное название сна (3-5 слов)",
+  "mood": "одно из: загадочный | мечтательный | тревожный | трансформирующий | вдохновляющий",
+  "symbols": [
+    {
+      "name": "название символа",
+      "emoji": "подходящий эмодзи",
+      "meaning": "толкование символа (2-3 предложения)"
+    }
+  ],
+  "interpretation": "Общее толкование сна (3-5 предложений).",
+  "recommendation": "Практический совет на основе сна (1-2 предложения)",
+  "videoPrompt": "Surreal dreamscape in Salvador Dali style. [описание сцены на английском, 2-3 предложения]. Impossible architecture, ethereal lighting, deep purples and midnight blues with golden accents, hyper-detailed, mystical atmosphere, cinematic.",
+  "lucidityScore": число от 1 до 10,
+  "emotionalTone": "основная эмоция сна"
+}`;
+
+  const completion = await client.chat.completions.create({
+    model: "gpt-4o",
+    temperature: 0.8,
+    max_tokens: 2000,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: `Мой сон: ${dreamText}` },
+    ],
+  });
+
+  return JSON.parse(completion.choices[0].message.content);
+}
+
+// ===== DALL-E 3: ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЯ =====
+async function generateImage(prompt) {
+  const client = new OpenAI({ apiKey: OPENAI_API_KEY });
+  console.log("🎨 Генерирую изображение через DALL-E 3...");
+
+  const response = await client.images.generate({
+    model: "dall-e-3",
+    prompt: prompt,
+    size: "1024x1024",
+    quality: "standard",
+    n: 1,
+  });
+
+  const url = response.data[0].url;
+  console.log("✅ Изображение готово!");
+  return url;
+}
+
+// ===== REPLICATE: ЗАПУСК ВИДЕО (MiniMax Video-01 — text-to-video) =====
+async function createVideoTask(videoPrompt) {
+  console.log("🎬 Генерирую видео через MiniMax Video-01...");
+
+  const response = await fetch(
+    "https://api.replicate.com/v1/models/minimax/video-01/predictions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${REPLICATE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        input: {
+          prompt: videoPrompt,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Replicate ошибка: ${response.status} — ${error}`);
+  }
+
+  const result = await response.json();
+  console.log("📋 Prediction ID:", result.id);
+
+  return { data: { task_id: result.id } };
+}
+
+// ===== REPLICATE: СТАТУС ВИДЕО =====
+async function checkVideoStatus(taskId) {
+  const response = await fetch(
+    `https://api.replicate.com/v1/predictions/${taskId}`,
+    {
+      headers: { Authorization: `Bearer ${REPLICATE_API_KEY}` },
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Replicate статус ошибка: ${response.status} — ${error}`);
+  }
+
+  const result = await response.json();
+  console.log("📊 Статус:", result.status);
+
+  if (result.status === "succeeded") {
+    const videoUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+    return {
+      data: {
+        task_status: "succeed",
+        task_result: { videos: [{ url: videoUrl }] },
+      },
+    };
+  }
+
+  if (result.status === "failed" || result.status === "canceled") {
+    return {
+      data: {
+        task_status: "failed",
+        task_status_msg: result.error || "Генерация не удалась",
+      },
+    };
+  }
+
+  return { data: { task_status: "processing" } };
+}
+
+module.exports = { analyzeDream, generateImage, createVideoTask, checkVideoStatus };
