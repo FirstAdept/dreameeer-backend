@@ -58,9 +58,12 @@ async function generateImage(prompt) {
   const client = new OpenAI({ apiKey: OPENAI_API_KEY });
   console.log("🎨 Генерирую изображение через DALL-E 3...");
 
+  // Безопасная обёртка для промпта — абстрактный сюрреализм без конкретных людей
+  const safePrompt = `Abstract surreal dream artwork, symbolic and ethereal, no real people, no children, no faces. Dreamlike atmosphere with symbolic imagery: ${prompt}. Style: Salvador Dali surrealism, painterly, mystical, deep purples and midnight blues with golden light, safe for all audiences.`;
+
   const response = await client.images.generate({
     model: "dall-e-3",
-    prompt: prompt,
+    prompt: safePrompt,
     size: "1024x1024",
     quality: "standard",
     n: 1,
