@@ -25,7 +25,7 @@ app.post("/api/dream/analyze", async (req, res) => {
       });
     }
 
-    console.log("🌙 Новый сон получен:", dreamText.substring(0, 80) + "...");
+    console.log("🌙 Новый сон получен:", dreamText);
 
     // 1. Анализ сна через OpenAI
     const analysis = await analyzeDream(dreamText);
@@ -126,7 +126,7 @@ app.post("/api/dream/full", async (req, res) => {
       });
     }
 
-    console.log("🌙 Полный пайплайн для:", dreamText.substring(0, 80));
+    console.log("🌙 Полный пайплайн для:", dreamText);
 
     // 1. Анализ
     const analysis = await analyzeDream(dreamText);
