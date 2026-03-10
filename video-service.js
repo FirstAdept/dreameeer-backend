@@ -40,7 +40,7 @@ async function analyzeDream(dreamText) {
 }`;
 
   const completion = await client.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-5.2",
     temperature: 0.8,
     max_tokens: 2000,
     response_format: { type: "json_object" },
