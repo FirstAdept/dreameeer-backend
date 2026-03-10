@@ -6,10 +6,22 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY || "";
 
 // ===== OPENAI: АНАЛИЗ СНА =====
-async function analyzeDream(dreamText) {
+async function analyzeDream(dreamText, mode = 'default', language = 'ru') {
   const client = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-  const systemPrompt = `Ты — Dreameeer, мистический ИИ-толкователь снов. Ты сочетаешь мудрость классических сонников (Миллер, Фрейд, Юнг, Ванга) с современной психологией.
+  const modeInstructions = {
+    default: 'Ты сочетаешь мудрость классических сонников (Миллер, Фрейд, Юнг, Ванга) с современной психологией.',
+    miller: 'Ты толкуешь сны строго по соннику Миллера — фокусируешься на жизненных событиях, практических предсказаниях, символах удачи, успеха и неудачи.',
+    freud: 'Ты толкуешь сны по методу Зигмунда Фрейда — ищешь подавленные желания, символы либидо, эго/ид/суперэго, вытесненные эмоции и детские комплексы.',
+    loff: 'Ты толкуешь сны по методу Дэвида Лоффа — фокусируешься на личностном росте, эмоциональной переработке опыта и архетипических символах самопознания.',
+  };
+
+  const langInstruction = language === 'en'
+    ? 'Respond in English. All fields (dreamTitle, symbols, interpretation, recommendation, emotionalTone) must be in English.'
+    : 'Отвечай на русском языке.';
+
+  const systemPrompt = `Ты — Dreameeer, мистический ИИ-толкователь снов. ${modeInstructions[mode] || modeInstructions.default}
+${langInstruction}
 
 ТВОЯ ЗАДАЧА:
 1. Получить описание сна
@@ -73,13 +85,17 @@ function sanitizePrompt(prompt) {
 }
 
 // ===== DALL-E 3: ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЯ =====
-async function generateImage(prompt) {
+async function generateImage(prompt, theme = 'dark') {
   const client = new OpenAI({ apiKey: OPENAI_API_KEY });
   console.log("🎨 Генерирую изображение через DALL-E 3...");
 
   const cleaned = sanitizePrompt(prompt);
-  // Безопасная обёртка для промпта — абстрактный сюрреализм без конкретных людей
-  const safePrompt = `Abstract surreal dream artwork, symbolic and ethereal, no real people, no children, no faces. Dreamlike atmosphere with symbolic imagery: ${cleaned}. Style: Salvador Dali surrealism, painterly, mystical, deep purples and midnight blues with golden light, safe for all audiences.`;
+
+  const themeStyle = theme === 'light'
+    ? 'Soft dreamy pastel artwork, airy warm atmosphere, cream and lavender gradient background, translucent glowing ethereal forms with soft bokeh, watercolor-like texture, gentle diffused light, peaceful and spiritual mood, minimal composition.'
+    : 'Surreal dream artwork in Salvador Dali style, deep purples and midnight blues with golden accents, mystical dramatic lighting, cinematic quality.';
+
+  const safePrompt = `${themeStyle} No real people, no children, no faces. Abstract symbolic imagery only: ${cleaned}. Safe for all audiences.`;
 
   const response = await client.images.generate({
     model: "dall-e-3",

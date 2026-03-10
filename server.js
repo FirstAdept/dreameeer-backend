@@ -17,7 +17,7 @@ const videoTasks = new Map();
 // POST /api/dream/analyze — анализ сна + запуск генерации видео
 app.post("/api/dream/analyze", async (req, res) => {
   try {
-    const { dreamText } = req.body;
+    const { dreamText, theme = 'dark', mode = 'default', language = 'ru' } = req.body;
 
     if (!dreamText || dreamText.trim().length < 10) {
       return res.status(400).json({
@@ -25,10 +25,10 @@ app.post("/api/dream/analyze", async (req, res) => {
       });
     }
 
-    console.log("🌙 Новый сон получен:", dreamText);
+    console.log(`🌙 Новый сон [theme:${theme}, mode:${mode}, lang:${language}]:`, dreamText);
 
     // 1. Анализ сна через OpenAI
-    const analysis = await analyzeDream(dreamText);
+    const analysis = await analyzeDream(dreamText, mode, language);
     console.log("✅ Анализ завершён");
 
     // 2. Изображение (DALL-E) + видео (MiniMax) параллельно из одного промта
@@ -37,7 +37,7 @@ app.post("/api/dream/analyze", async (req, res) => {
 
     if (analysis.videoPrompt) {
       const [imageResult, videoResult] = await Promise.allSettled([
-        generateImage(analysis.videoPrompt),
+        generateImage(analysis.videoPrompt, theme),
         createVideoTask(analysis.videoPrompt),
       ]);
 
