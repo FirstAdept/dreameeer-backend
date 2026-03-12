@@ -13,6 +13,7 @@ const FREE_DREAMS_LIMIT = 3;
 
 // ===== MongoDB (опционально) =====
 let User = null;
+let Dream = null;
 
 if (process.env.MONGODB_URI) {
   const mongoose = require("mongoose");
@@ -32,7 +33,25 @@ if (process.env.MONGODB_URI) {
     createdAt: { type: Date, default: Date.now },
   });
 
+  const dreamSchema = new mongoose.Schema({
+    deviceId: { type: String, index: true },
+    dreamText: { type: String },
+    analysis: { type: Object },
+    imageUrl: { type: String, default: null },
+    videoUrl: { type: String, default: null },
+    videoTaskId: { type: String, default: null },
+    theme: { type: String, default: "dark" },
+    language: { type: String, default: "ru" },
+    cost: {
+      analysis: { type: Number, default: 0.08 },  // GPT approx
+      image: { type: Number, default: 0.04 },       // DALL-E 3
+      video: { type: Number, default: 0.18 },       // MiniMax
+    },
+    createdAt: { type: Date, default: Date.now },
+  });
+
   User = mongoose.models.User || mongoose.model("User", userSchema);
+  Dream = mongoose.models.Dream || mongoose.model("Dream", dreamSchema);
 }
 
 // ===== Fallback: хранилище в памяти (без MongoDB) =====
@@ -269,9 +288,25 @@ app.post("/api/dream/analyze", async (req, res) => {
       }
     }
 
-    // 3. Увеличиваем счётчик снов
+    // 3. Сохраняем сон в БД + увеличиваем счётчик
     if (deviceId) {
       await incrementDreamCount(deviceId);
+      if (Dream) {
+        Dream.create({
+          deviceId,
+          dreamText: text,
+          analysis,
+          imageUrl,
+          videoTaskId: taskId,
+          theme,
+          language,
+          cost: {
+            analysis: 0.08,
+            image: imageUrl ? 0.04 : 0,
+            video: taskId ? 0.18 : 0,
+          },
+        }).catch(e => console.error("⚠️ Ошибка сохранения сна:", e.message));
+      }
     }
 
     // 4. Возвращаем результат
@@ -349,6 +384,89 @@ app.post("/api/dream/full", async (req, res) => {
     res.json({ success: true, analysis, videoUrl });
   } catch (err) {
     console.error("❌ Ошибка:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===== ADMIN ENDPOINTS =====
+function adminAuth(req, res, next) {
+  const token = req.headers["x-admin-token"] || req.query.token;
+  const expected = process.env.ADMIN_TOKEN || "dreameeer-admin-2024";
+  if (token !== expected) return res.status(401).json({ error: "Unauthorized" });
+  next();
+}
+
+// GET /api/admin/stats — сводная статистика
+app.get("/api/admin/stats", adminAuth, async (req, res) => {
+  try {
+    if (!User) return res.json({ error: "MongoDB not connected" });
+
+    const [totalUsers, subscribers, totalDreams, recentDreams] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ "subscription.status": "active" }),
+      Dream ? Dream.countDocuments() : Promise.resolve(0),
+      Dream ? Dream.find().sort({ createdAt: -1 }).limit(5).lean() : Promise.resolve([]),
+    ]);
+
+    // Считаем расходы
+    const costAgg = Dream ? await Dream.aggregate([
+      { $group: {
+        _id: null,
+        totalAnalysis: { $sum: "$cost.analysis" },
+        totalImage: { $sum: "$cost.image" },
+        totalVideo: { $sum: "$cost.video" },
+      }}
+    ]) : [];
+
+    const costs = costAgg[0] || { totalAnalysis: 0, totalImage: 0, totalVideo: 0 };
+    const totalCost = costs.totalAnalysis + costs.totalImage + costs.totalVideo;
+    const revenue = subscribers * 499;
+    const costPerUser = totalUsers > 0 ? (totalCost / totalUsers).toFixed(2) : 0;
+
+    res.json({
+      users: { total: totalUsers, subscribers, free: totalUsers - subscribers },
+      dreams: { total: totalDreams },
+      finance: {
+        revenue_rub: revenue,
+        total_cost_usd: totalCost.toFixed(2),
+        cost_per_user_usd: costPerUser,
+        breakdown: {
+          analysis_usd: costs.totalAnalysis.toFixed(2),
+          images_usd: costs.totalImage.toFixed(2),
+          videos_usd: costs.totalVideo.toFixed(2),
+        },
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/dreams — список снов с визуализациями
+app.get("/api/admin/dreams", adminAuth, async (req, res) => {
+  try {
+    if (!Dream) return res.json({ dreams: [] });
+    const page = parseInt(req.query.page) || 0;
+    const limit = parseInt(req.query.limit) || 20;
+    const dreams = await Dream.find()
+      .sort({ createdAt: -1 })
+      .skip(page * limit)
+      .limit(limit)
+      .lean();
+    const total = await Dream.countDocuments();
+    res.json({ dreams, total, page, pages: Math.ceil(total / limit) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/users — список пользователей
+app.get("/api/admin/users", adminAuth, async (req, res) => {
+  try {
+    if (!User) return res.json({ users: [] });
+    const users = await User.find().sort({ createdAt: -1 }).limit(100).lean();
+    res.json({ users });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

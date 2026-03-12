@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreameeer Admin</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #07071a;
+    color: #e2e8ff;
+    min-height: 100vh;
+  }
+
+  /* Login screen */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 30% 30%, rgba(124,58,237,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 70%, rgba(59,130,246,0.1) 0%, transparent 60%),
+                #07071a;
+  }
+  .login-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 48px 40px;
+    width: 360px;
+    text-align: center;
+  }
+  .login-logo { font-size: 48px; margin-bottom: 12px; }
+  .login-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .login-sub { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 28px; }
+  .login-input {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06); color: #fff; font-size: 15px;
+    margin-bottom: 12px; outline: none;
+  }
+  .login-btn {
+    width: 100%; padding: 14px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: #fff; font-size: 16px; font-weight: 600; cursor: pointer;
+  }
+  .login-error { color: #f87171; font-size: 13px; margin-top: 10px; }
+
+  /* Main app */
+  #app { display: none; }
+
+  /* Sidebar */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
+    background: rgba(255,255,255,0.03);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 24px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 8px; margin-bottom: 24px;
+  }
+  .sidebar-logo span { font-size: 22px; }
+  .sidebar-logo h1 { font-size: 18px; font-weight: 700; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px; cursor: pointer;
+    font-size: 14px; color: rgba(255,255,255,0.5);
+    transition: all 0.15s;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
+  .nav-item.active { background: rgba(124,58,237,0.2); color: #a78bfa; }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  /* Content */
+  .content { margin-left: 220px; padding: 32px; min-height: 100vh; }
+
+  /* Page header */
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-size: 26px; font-weight: 700; }
+  .page-sub { font-size: 14px; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+  /* Stats grid */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px; padding: 20px 22px;
+  }
+  .stat-label { font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-value { font-size: 32px; font-weight: 700; }
+  .stat-sub { font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+  .stat-card.purple { border-color: rgba(124,58,237,0.3); background: rgba(124,58,237,0.08); }
+  .stat-card.green { border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.06); }
+  .stat-card.blue { border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.06); }
+  .stat-card.orange { border-color: rgba(251,146,60,0.3); background: rgba(251,146,60,0.06); }
+
+  /* Finance breakdown */
+  .finance-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 14px;
+  }
+  .finance-row:last-child { border-bottom: none; }
+  .finance-label { color: rgba(255,255,255,0.6); }
+  .finance-value { font-weight: 600; }
+
+  /* Dreams feed */
+  .dreams-grid { display: grid; gap: 16px; }
+  .dream-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px; padding: 20px;
+    display: grid; grid-template-columns: 1fr auto; gap: 16px;
+  }
+  .dream-meta { font-size: 11px; color: rgba(255,255,255,0.35); margin-bottom: 8px; }
+  .dream-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .dream-text {
+    font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.5;
+    max-height: 60px; overflow: hidden;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  }
+  .dream-mood {
+    display: inline-block; padding: 2px 10px; border-radius: 20px;
+    font-size: 11px; background: rgba(124,58,237,0.2); color: #a78bfa;
+    border: 1px solid rgba(124,58,237,0.3); margin-top: 8px;
+  }
+  .dream-media { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  .dream-img {
+    width: 100px; height: 70px; border-radius: 10px; object-fit: cover;
+    border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+  }
+  .dream-video-btn {
+    font-size: 11px; padding: 4px 10px; border-radius: 8px;
+    background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.3);
+    color: #a78bfa; cursor: pointer; text-decoration: none;
+  }
+  .dream-cost { font-size: 11px; color: rgba(255,255,255,0.3); }
+
+  /* Users table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left; padding: 10px 14px; font-size: 11px;
+    color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  td {
+    padding: 12px 14px; font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px;
+  }
+  .badge-active { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+  .badge-free { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); }
+  .badge-expired { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+
+  /* Section card */
+  .section-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px; padding: 22px;
+    margin-bottom: 20px;
+  }
+  .section-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; color: rgba(255,255,255,0.8); }
+
+  /* Tabs */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Loader */
+  .loader { text-align: center; padding: 60px; color: rgba(255,255,255,0.3); }
+
+  /* Pagination */
+  .pagination { display: flex; gap: 8px; align-items: center; margin-top: 16px; justify-content: flex-end; }
+  .page-btn {
+    padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.6);
+    cursor: pointer; font-size: 13px;
+  }
+  .page-btn:hover { background: rgba(255,255,255,0.08); }
+  .page-info { font-size: 13px; color: rgba(255,255,255,0.35); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    z-index: 1000; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #12122a; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 24px; max-width: 500px; width: 90%; max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-close {
+    float: right; background: none; border: none; color: rgba(255,255,255,0.4);
+    font-size: 20px; cursor: pointer; margin-bottom: 12px;
+  }
+  .modal img { width: 100%; border-radius: 12px; margin-bottom: 12px; }
+  .modal video { width: 100%; border-radius: 12px; margin-bottom: 12px; }
+  .modal h3 { font-size: 17px; margin-bottom: 8px; }
+  .modal p { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.6; }
+
+  /* Refresh btn */
+  .refresh-btn {
+    padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.6);
+    cursor: pointer; font-size: 13px; float: right;
+  }
+  .refresh-btn:hover { background: rgba(255,255,255,0.08); }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🌙</div>
+    <div class="login-title">Dreameeer Admin</div>
+    <div class="login-sub">Введите токен доступа</div>
+    <input class="login-input" id="token-input" type="password" placeholder="Admin token" />
+    <button class="login-btn" onclick="login()">Войти</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <span>🌙</span>
+      <h1>Dreameeer</h1>
+    </div>
+    <button class="nav-item active" onclick="showPage('dashboard', this)">
+      <span class="nav-icon">📊</span> Dashboard
+    </button>
+    <button class="nav-item" onclick="showPage('dreams', this)">
+      <span class="nav-icon">🎬</span> Сны
+    </button>
+    <button class="nav-item" onclick="showPage('users', this)">
+      <span class="nav-icon">👥</span> Пользователи
+    </button>
+    <button class="nav-item" onclick="showPage('finance', this)">
+      <span class="nav-icon">💰</span> Финансы
+    </button>
+  </div>
+
+  <div class="content">
+
+    <!-- Dashboard -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub" id="last-updated">Загрузка...</div>
+        <button class="refresh-btn" onclick="loadStats()">↻ Обновить</button>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="loader">Загрузка...</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="section-card">
+          <div class="section-title">💰 Расходы по категориям</div>
+          <div id="cost-breakdown"><div class="loader">...</div></div>
+        </div>
+        <div class="section-card">
+          <div class="section-title">🎬 Последние сны</div>
+          <div id="recent-dreams-list"><div class="loader">...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dreams -->
+    <div id="page-dreams" class="page">
+      <div class="page-header">
+        <div class="page-title">Сны пользователей</div>
+        <div class="page-sub">Все сны с изображениями и видео</div>
+        <button class="refresh-btn" onclick="loadDreams()">↻ Обновить</button>
+      </div>
+      <div id="dreams-list"><div class="loader">Загрузка снов...</div></div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- Users -->
+    <div id="page-users" class="page">
+      <div class="page-header">
+        <div class="page-title">Пользователи</div>
+        <div class="page-sub" id="users-count">Загрузка...</div>
+        <button class="refresh-btn" onclick="loadUsers()">↻ Обновить</button>
+      </div>
+      <div class="section-card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Device ID</th>
+                <th>Снов</th>
+                <th>Подписка</th>
+                <th>Истекает</th>
+                <th>Зарегистрирован</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="5" class="loader">Загрузка...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Finance -->
+    <div id="page-finance" class="page">
+      <div class="page-header">
+        <div class="page-title">Финансы</div>
+        <div class="page-sub">Доходы, расходы и рентабельность</div>
+        <button class="refresh-btn" onclick="loadStats()">↻ Обновить</button>
+      </div>
+
+      <div class="stats-grid" id="finance-stats-grid">
+        <div class="stat-card"><div class="loader">...</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="section-card">
+          <div class="section-title">📈 Расчёт рентабельности</div>
+          <div id="roi-section"><div class="loader">...</div></div>
+        </div>
+        <div class="section-card">
+          <div class="section-title">💡 Стоимость за пользователя</div>
+          <div id="cpa-section"><div class="loader">...</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+  const API = 'https://dreameeer-backend-production.up.railway.app';
+  let adminToken = '';
+  let currentDreamsPage = 0;
+  let statsData = null;
+
+  function login() {
+    const token = document.getElementById('token-input').value.trim();
+    if (!token) return;
+    adminToken = token;
+    loadAll();
+  }
+
+  document.getElementById('token-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+
+  async function apiFetch(path) {
+    const res = await fetch(API + path, {
+      headers: { 'x-admin-token': adminToken }
+    });
+    if (res.status === 401) {
+      document.getElementById('login-error').textContent = 'Неверный токен';
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      return null;
+    }
+    return res.json();
+  }
+
+  async function loadAll() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    await Promise.all([loadStats(), loadDreams(), loadUsers()]);
+  }
+
+  async function loadStats() {
+    const data = await apiFetch('/api/admin/stats');
+    if (!data) return;
+    statsData = data;
+
+    document.getElementById('last-updated').textContent =
+      'Обновлено: ' + new Date().toLocaleTimeString('ru-RU');
+
+    // Stats grid
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card purple">
+        <div class="stat-label">Всего пользователей</div>
+        <div class="stat-value">${data.users.total}</div>
+        <div class="stat-sub">${data.users.free} бесплатных · ${data.users.subscribers} платных</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Подписчиков</div>
+        <div class="stat-value">${data.users.subscribers}</div>
+        <div class="stat-sub">${data.users.total > 0 ? ((data.users.subscribers/data.users.total)*100).toFixed(1) : 0}% конверсия</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-label">Всего снов</div>
+        <div class="stat-value">${data.dreams.total}</div>
+        <div class="stat-sub">${data.users.total > 0 ? (data.dreams.total/data.users.total).toFixed(1) : 0} снов/пользователь</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">Выручка</div>
+        <div class="stat-value">${data.finance.revenue_rub.toLocaleString('ru-RU')} ₽</div>
+        <div class="stat-sub">расходы ~$${data.finance.total_cost_usd}</div>
+      </div>
+    `;
+
+    // Cost breakdown
+    document.getElementById('cost-breakdown').innerHTML = `
+      <div class="finance-row">
+        <span class="finance-label">🧠 Анализ снов (GPT)</span>
+        <span class="finance-value">$${data.finance.breakdown.analysis_usd}</span>
+      </div>
+      <div class="finance-row">
+        <span class="finance-label">🎨 Изображения (DALL-E)</span>
+        <span class="finance-value">$${data.finance.breakdown.images_usd}</span>
+      </div>
+      <div class="finance-row">
+        <span class="finance-label">🎬 Видео (MiniMax)</span>
+        <span class="finance-value">$${data.finance.breakdown.videos_usd}</span>
+      </div>
+      <div class="finance-row" style="margin-top:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.1)">
+        <span class="finance-label" style="font-weight:600;color:#fff">Итого расходы</span>
+        <span class="finance-value" style="color:#f87171">$${data.finance.total_cost_usd}</span>
+      </div>
+      <div class="finance-row">
+        <span class="finance-label" style="font-weight:600;color:#fff">Расход на пользователя</span>
+        <span class="finance-value" style="color:#fbbf24">$${data.finance.cost_per_user_usd}</span>
+      </div>
+    `;
+
+    // Finance stats
+    const usdRate = 90;
+    const costRub = (parseFloat(data.finance.total_cost_usd) * usdRate).toFixed(0);
+    const profit = data.finance.revenue_rub - parseFloat(costRub);
+    document.getElementById('finance-stats-grid').innerHTML = `
+      <div class="stat-card green">
+        <div class="stat-label">Выручка</div>
+        <div class="stat-value">${data.finance.revenue_rub.toLocaleString('ru-RU')} ₽</div>
+        <div class="stat-sub">${data.users.subscribers} × 499 ₽</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">Расходы (AI)</div>
+        <div class="stat-value">~${parseInt(costRub).toLocaleString('ru-RU')} ₽</div>
+        <div class="stat-sub">$${data.finance.total_cost_usd} × 90 ₽</div>
+      </div>
+      <div class="stat-card ${profit >= 0 ? 'green' : 'purple'}">
+        <div class="stat-label">Прибыль</div>
+        <div class="stat-value" style="color:${profit >= 0 ? '#34d399' : '#f87171'}">${profit >= 0 ? '+' : ''}${profit.toLocaleString('ru-RU')} ₽</div>
+        <div class="stat-sub">${data.finance.revenue_rub > 0 ? ((profit/data.finance.revenue_rub)*100).toFixed(1) : 0}% маржа</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-label">ARPU</div>
+        <div class="stat-value">${data.users.total > 0 ? (data.finance.revenue_rub/data.users.total).toFixed(0) : 0} ₽</div>
+        <div class="stat-sub">выручка на пользователя</div>
+      </div>
+    `;
+
+    // ROI
+    const costPerSub = data.users.subscribers > 0
+      ? (parseFloat(data.finance.total_cost_usd) * usdRate / data.users.subscribers).toFixed(0)
+      : 0;
+    document.getElementById('roi-section').innerHTML = `
+      <div class="finance-row">
+        <span class="finance-label">Доход на подписчика</span>
+        <span class="finance-value" style="color:#34d399">499 ₽ / мес</span>
+      </div>
+      <div class="finance-row">
+        <span class="finance-label">Расход на подписчика</span>
+        <span class="finance-value" style="color:#fbbf24">~${costPerSub} ₽ / мес</span>
+      </div>
+      <div class="finance-row">
+        <span class="finance-label">ROI на подписчика</span>
+        <span class="finance-value" style="color:#a78bfa">${costPerSub > 0 ? (((499 - costPerSub) / costPerSub) * 100).toFixed(0) : '∞'}%</span>
+      </div>
+    `;
+
+    // CPA
+    document.getElementById('cpa-section').innerHTML = `
+      <div class="finance-row">
+        <span class="finance-label">Расход / бесплатный</span>
+        <span class="finance-value">$${(parseFloat(data.finance.cost_per_user_usd) * 0.5).toFixed(3)}</span>
+      </div>
+      <div class="finance-row">
+        <span class="finance-label">Расход / подписчик</span>
+        <span class="finance-value">$${data.finance.cost_per_user_usd}</span>
+      </div>
+      <div class="finance-row">
+        <span class="finance-label">Анализ снов (GPT)</span>
+        <span class="finance-value">~$0.08 / сон</span>
+      </div>
+      <div class="finance-row">
+        <span class="finance-label">Изображение (DALL-E 3)</span>
+        <span class="finance-value">~$0.04 / шт</span>
+      </div>
+      <div class="finance-row">
+        <span class="finance-label">Видео (MiniMax)</span>
+        <span class="finance-value">~$0.18 / шт</span>
+      </div>
+    `;
+  }
+
+  let dreamsTotal = 0;
+  async function loadDreams(page = 0) {
+    currentDreamsPage = page;
+    document.getElementById('dreams-list').innerHTML = '<div class="loader">Загрузка снов...</div>';
+    const data = await apiFetch(`/api/admin/dreams?page=${page}&limit=15`);
+    if (!data) return;
+    dreamsTotal = data.total;
+
+    if (!data.dreams.length) {
+      document.getElementById('dreams-list').innerHTML =
+        '<div class="loader">Снов пока нет. Они появятся после первых анализов.</div>';
+      return;
+    }
+
+    document.getElementById('dreams-list').innerHTML = data.dreams.map(d => `
+      <div class="dream-card">
+        <div>
+          <div class="dream-meta">
+            ${new Date(d.createdAt).toLocaleString('ru-RU')} ·
+            ${d.language === 'ru' ? '🇷🇺' : '🇬🇧'} ·
+            ${d.theme === 'dark' ? '🌙' : '☀️'} ·
+            <span class="dream-cost">$${((d.cost?.analysis||0)+(d.cost?.image||0)+(d.cost?.video||0)).toFixed(2)}</span>
+          </div>
+          <div class="dream-title">${d.analysis?.dreamTitle || 'Без названия'}</div>
+          <div class="dream-text">${d.dreamText || ''}</div>
+          <span class="dream-mood">${d.analysis?.mood || ''}</span>
+        </div>
+        <div class="dream-media">
+          ${d.imageUrl ? `<img class="dream-img" src="${d.imageUrl}" onclick="openDream('${d._id}')" title="Нажмите для просмотра" onerror="this.style.display='none'">` : '<div style="width:100px;height:70px;background:rgba(255,255,255,0.04);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px">🌙</div>'}
+          ${d.videoUrl ? `<a class="dream-video-btn" href="${d.videoUrl}" target="_blank">▶ Видео</a>` : d.videoTaskId ? '<span class="dream-video-btn" style="opacity:0.5">⏳ Генерируется</span>' : ''}
+        </div>
+      </div>
+    `).join('');
+
+    // Pagination
+    const pages = data.pages;
+    document.getElementById('pagination').innerHTML = pages > 1 ? `
+      <button class="page-btn" onclick="loadDreams(${page-1})" ${page===0?'disabled':''}>← Назад</button>
+      <span class="page-info">Стр. ${page+1} из ${pages} (${dreamsTotal} снов)</span>
+      <button class="page-btn" onclick="loadDreams(${page+1})" ${page>=pages-1?'disabled':''}>Вперёд →</button>
+    ` : `<span class="page-info">${dreamsTotal} снов</span>`;
+
+    // Recent dreams for dashboard
+    document.getElementById('recent-dreams-list').innerHTML = data.dreams.slice(0,4).map(d => `
+      <div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;gap:10px;align-items:center">
+        ${d.imageUrl ? `<img src="${d.imageUrl}" style="width:36px;height:36px;border-radius:6px;object-fit:cover" onerror="this.style.display='none'">` : '<div style="width:36px;height:36px;background:rgba(124,58,237,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center">🌙</div>'}
+        <div>
+          <div style="font-size:13px;font-weight:500">${d.analysis?.dreamTitle || 'Сон'}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35)">${new Date(d.createdAt).toLocaleString('ru-RU', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+      </div>
+    `).join('') || '<div style="color:rgba(255,255,255,0.3);font-size:13px">Снов пока нет</div>';
+  }
+
+  async function loadUsers() {
+    const data = await apiFetch('/api/admin/users');
+    if (!data) return;
+    document.getElementById('users-count').textContent = `${data.users.length} пользователей`;
+    document.getElementById('users-tbody').innerHTML = data.users.map(u => `
+      <tr>
+        <td style="font-family:monospace;font-size:11px;color:rgba(255,255,255,0.4)">${u.deviceId.slice(0,16)}...</td>
+        <td>${u.dreamCount}</td>
+        <td><span class="badge badge-${u.subscription.status === 'active' ? 'active' : u.subscription.status === 'expired' ? 'expired' : 'free'}">${u.subscription.status === 'active' ? '✓ Активна' : u.subscription.status === 'expired' ? 'Истекла' : 'Бесплатно'}</span></td>
+        <td style="color:rgba(255,255,255,0.4);font-size:12px">${u.subscription.expiresAt ? new Date(u.subscription.expiresAt).toLocaleDateString('ru-RU') : '—'}</td>
+        <td style="color:rgba(255,255,255,0.4);font-size:12px">${new Date(u.createdAt).toLocaleDateString('ru-RU')}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" class="loader">Пользователей нет</td></tr>';
+  }
+
+  // Dream detail modal
+  const dreamCache = {};
+  async function openDream(id) {
+    if (!dreamCache[id]) {
+      const data = await apiFetch('/api/admin/dreams?limit=100');
+      if (data) data.dreams.forEach(d => { dreamCache[d._id] = d; });
+    }
+    const d = dreamCache[id];
+    if (!d) return;
+    document.getElementById('modal-content').innerHTML = `
+      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('open')">✕</button>
+      ${d.imageUrl ? `<img src="${d.imageUrl}" alt="Визуализация сна">` : ''}
+      ${d.videoUrl ? `<video src="${d.videoUrl}" controls autoplay loop></video>` : ''}
+      <h3>${d.analysis?.dreamTitle || 'Сон'}</h3>
+      <p style="color:#a78bfa;margin-bottom:8px">${d.analysis?.mood || ''} · ${new Date(d.createdAt).toLocaleString('ru-RU')}</p>
+      <p style="margin-bottom:12px"><strong>Сон:</strong> ${d.dreamText}</p>
+      <p><strong>Толкование:</strong> ${d.analysis?.interpretation || ''}</p>
+    `;
+    document.getElementById('modal').classList.add('open');
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('modal'))
+      document.getElementById('modal').classList.remove('open');
+  }
+
+  function showPage(name, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'finance') loadStats();
+  }
+</script>
+</body>
+</html>
