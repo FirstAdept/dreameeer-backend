@@ -227,6 +227,36 @@ app.post("/api/webhook/yookassa", async (req, res) => {
   }
 });
 
+// POST /api/payment/check — проверить статус платежа напрямую в ЮKassa и активировать если succeeded
+app.post("/api/payment/check", async (req, res) => {
+  try {
+    const { deviceId, paymentId } = req.body;
+    if (!deviceId || !paymentId) return res.status(400).json({ error: "deviceId and paymentId required" });
+
+    const shopId = process.env.YOOKASSA_SHOP_ID;
+    const secretKey = process.env.YOOKASSA_SECRET_KEY;
+    if (!shopId || !secretKey) return res.status(503).json({ error: "Payment system not configured" });
+
+    const response = await fetch(`https://api.yookassa.ru/v3/payments/${paymentId}`, {
+      headers: {
+        Authorization: "Basic " + Buffer.from(`${shopId}:${secretKey}`).toString("base64"),
+      },
+    });
+    const payment = await response.json();
+    console.log("🔍 Payment check:", paymentId, payment.status);
+
+    if (payment.status === "succeeded") {
+      await activateSubscription(deviceId, paymentId);
+      return res.json({ activated: true });
+    }
+
+    res.json({ activated: false, status: payment.status });
+  } catch (err) {
+    console.error("❌ /api/payment/check:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ===== Хранилище задач видео =====
 const videoTasks = new Map();
 
