@@ -257,6 +257,41 @@ app.post("/api/payment/check", async (req, res) => {
   }
 });
 
+// POST /api/subscription/restore — найти оплаченный платёж по deviceId и активировать подписку
+app.post("/api/subscription/restore", async (req, res) => {
+  try {
+    const { deviceId } = req.body;
+    if (!deviceId) return res.status(400).json({ error: "deviceId required" });
+
+    const shopId = process.env.YOOKASSA_SHOP_ID;
+    const secretKey = process.env.YOOKASSA_SECRET_KEY;
+    if (!shopId || !secretKey) return res.status(503).json({ error: "Payment system not configured" });
+
+    // Получаем последние 100 успешных платежей из ЮKassa
+    const response = await fetch("https://api.yookassa.ru/v3/payments?limit=100&status=succeeded", {
+      headers: {
+        Authorization: "Basic " + Buffer.from(`${shopId}:${secretKey}`).toString("base64"),
+      },
+    });
+    const data = await response.json();
+    console.log("🔍 Restore: найдено платежей:", data.items?.length);
+
+    // Ищем платёж с совпадающим deviceId в metadata
+    const payment = data.items?.find(p => p.metadata?.deviceId === deviceId);
+
+    if (payment) {
+      await activateSubscription(deviceId, payment.id);
+      console.log("✅ Подписка восстановлена для", deviceId, "платёж", payment.id);
+      return res.json({ activated: true, paymentId: payment.id });
+    }
+
+    res.json({ activated: false, message: "Оплаченный платёж не найден" });
+  } catch (err) {
+    console.error("❌ /api/subscription/restore:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ===== Хранилище задач видео =====
 const videoTasks = new Map();
 
