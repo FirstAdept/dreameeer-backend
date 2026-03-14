@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
-const FREE_DREAMS_LIMIT = 3;
+const FREE_DREAMS_LIMIT = 1;
 
 // ===== MongoDB (опционально) =====
 let User = null;
