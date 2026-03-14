@@ -267,17 +267,36 @@ app.post("/api/subscription/restore", async (req, res) => {
     const secretKey = process.env.YOOKASSA_SECRET_KEY;
     if (!shopId || !secretKey) return res.status(503).json({ error: "Payment system not configured" });
 
-    // Получаем последние 100 успешных платежей из ЮKassa
-    const response = await fetch("https://api.yookassa.ru/v3/payments?limit=100&status=succeeded", {
-      headers: {
-        Authorization: "Basic " + Buffer.from(`${shopId}:${secretKey}`).toString("base64"),
-      },
-    });
-    const data = await response.json();
-    console.log("🔍 Restore: найдено платежей:", data.items?.length);
+    const authHeader = "Basic " + Buffer.from(`${shopId}:${secretKey}`).toString("base64");
 
-    // Ищем платёж с совпадающим deviceId в metadata
-    const payment = data.items?.find(p => p.metadata?.deviceId === deviceId);
+    // Получаем последние платежи из ЮKassa (без фильтра по статусу — берём все и фильтруем сами)
+    const url = new URL("https://api.yookassa.ru/v3/payments");
+    url.searchParams.set("limit", "100");
+
+    const response = await fetch(url.toString(), {
+      headers: { Authorization: authHeader },
+    });
+
+    const rawText = await response.text();
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch {
+      console.error("❌ ЮKassa вернула не JSON:", rawText.slice(0, 300));
+      return res.status(502).json({ error: "Неверный ответ от ЮKassa", raw: rawText.slice(0, 200) });
+    }
+
+    console.log("🔍 Restore: статус ответа:", response.status, "платежей:", data.items?.length ?? 0);
+
+    if (!data.items) {
+      console.error("❌ ЮKassa ошибка:", JSON.stringify(data));
+      return res.status(502).json({ error: data.description || "Ошибка ЮKassa", details: data });
+    }
+
+    // Ищем succeeded платёж с совпадающим deviceId в metadata
+    const payment = data.items.find(
+      p => p.status === "succeeded" && p.metadata?.deviceId === deviceId
+    );
 
     if (payment) {
       await activateSubscription(deviceId, payment.id);
@@ -285,6 +304,8 @@ app.post("/api/subscription/restore", async (req, res) => {
       return res.json({ activated: true, paymentId: payment.id });
     }
 
+    console.log("ℹ️ Платёж не найден для deviceId:", deviceId,
+      "| Все metadata:", data.items.map(p => ({ id: p.id, status: p.status, meta: p.metadata })));
     res.json({ activated: false, message: "Оплаченный платёж не найден" });
   } catch (err) {
     console.error("❌ /api/subscription/restore:", err);
