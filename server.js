@@ -105,7 +105,7 @@ async function createYookassaPayment(amount, email, description, metadata) {
   const shopId = process.env.YOOKASSA_SHOP_ID;
   const secretKey = process.env.YOOKASSA_SECRET_KEY;
   const idempotenceKey = crypto.randomUUID();
-  const frontendUrl = process.env.FRONTEND_URL || "https://dreameeer-app.vercel.app";
+  const frontendUrl = process.env.FRONTEND_URL || "https://dreameeer.ru";
 
   const body = {
     amount: { value: amount, currency: "RUB" },
