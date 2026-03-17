@@ -30,6 +30,10 @@ if (process.env.MONGODB_URI) {
       expiresAt: { type: Date, default: null },
       paymentId: { type: String, default: null },
     },
+    videoQuota: {
+      count: { type: Number, default: 0 },       // видео сгенерировано в этом месяце
+      resetAt: { type: Date, default: null },     // когда сбросить счётчик
+    },
     createdAt: { type: Date, default: Date.now },
   });
 
@@ -420,18 +424,55 @@ app.get("/api/dream/video/:taskId", async (req, res) => {
   }
 });
 
+const VIDEO_MONTHLY_LIMIT = 10;
+
 // POST /api/dream/video/create — запуск генерации видео по запросу
 app.post("/api/dream/video/create", async (req, res) => {
   try {
     const { videoPrompt, theme = "dark", mood = "", deviceId } = req.body;
     if (!videoPrompt) return res.status(400).json({ error: "videoPrompt required" });
 
-    // Проверяем подписку
+    // Проверяем подписку и месячный лимит видео
     if (deviceId) {
       const user = await getUser(deviceId);
       const isSubscribed = user.subscription.status === "active";
       if (!isSubscribed) {
         return res.status(402).json({ error: "subscription_required" });
+      }
+
+      // Проверяем месячный лимит
+      const now = new Date();
+      const quota = user.videoQuota || { count: 0, resetAt: null };
+      const needsReset = !quota.resetAt || new Date(quota.resetAt) <= now;
+
+      if (needsReset) {
+        // Новый месяц — сброс счётчика
+        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        if (User) {
+          await User.findOneAndUpdate(
+            { deviceId },
+            { "videoQuota.count": 0, "videoQuota.resetAt": nextMonth }
+          );
+        } else {
+          user.videoQuota = { count: 0, resetAt: nextMonth };
+        }
+        quota.count = 0;
+      }
+
+      if (quota.count >= VIDEO_MONTHLY_LIMIT) {
+        return res.status(429).json({
+          error: "video_limit_reached",
+          message: `Лимит видео на этот месяц исчерпан (${VIDEO_MONTHLY_LIMIT}/месяц). Обновится 1-го числа.`,
+          limit: VIDEO_MONTHLY_LIMIT,
+          used: quota.count,
+        });
+      }
+
+      // Увеличиваем счётчик
+      if (User) {
+        await User.findOneAndUpdate({ deviceId }, { $inc: { "videoQuota.count": 1 } });
+      } else {
+        user.videoQuota.count = (user.videoQuota.count || 0) + 1;
       }
     }
 
