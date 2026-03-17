@@ -380,7 +380,7 @@ app.post("/api/dream/analyze", async (req, res) => {
       if (Dream) {
         Dream.create({
           deviceId,
-          dreamText: text,
+          dreamText: dreamText,
           analysis,
           imageUrl,
           videoTaskId: taskId,
