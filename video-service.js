@@ -121,14 +121,16 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
 
   const cleaned = sanitizePrompt(prompt);
 
-  // Mood takes priority; theme is secondary style layer
-  const moodStyle = moodImageStyles[mood] || moodImageStyles['default'];
+  let safePrompt;
 
-  const themeOverlay = theme === 'light'
-    ? ' Watercolor-like texture, airy translucent forms, soft diffused lighting.'
-    : ' Cinematic dramatic lighting, rich saturated colors, sharp contrast.';
-
-  const safePrompt = `${moodStyle}${themeOverlay} SCENE ELEMENTS: ${cleaned}. No real people, no children, no faces. Abstract symbolic imagery only. Safe for all audiences.`;
+  if (theme === 'light') {
+    // Light theme: stylized cartoon illustration with soft dawn palette
+    safePrompt = `Stylized dream illustration, semi-cartoon slightly surreal clean style. Soft dawn color palette: warm peach, blush rose, gentle lavender, golden honey, airy sky blue. Smooth pastel gradients, soft diffused lighting, dreamlike warm glow. Main objects from the dream must be clearly visible, large, detailed and centered in composition — place them prominently in the foreground. Vibrant but harmonious pastel colors. Smooth shading, high detail, modern illustration style. Cinematic balanced composition, background supports subjects without overpowering. Sharp focus on main subjects. SCENE ELEMENTS: ${cleaned}. No real people, no children, no faces. Safe for all audiences.`;
+  } else {
+    // Dark theme: mood-based dramatic style
+    const moodStyle = moodImageStyles[mood] || moodImageStyles['default'];
+    safePrompt = `${moodStyle} Cinematic dramatic lighting, rich saturated colors, sharp contrast. SCENE ELEMENTS: ${cleaned}. No real people, no children, no faces. Abstract symbolic imagery only. Safe for all audiences.`;
+  }
 
   const response = await client.images.generate({
     model: "dall-e-3",
