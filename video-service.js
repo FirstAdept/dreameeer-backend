@@ -158,13 +158,12 @@ async function createVideoTask(videoPrompt, theme = 'dark', mood = '') {
   const finalPrompt = moodStyle + themeOverlay + sanitizePrompt(videoPrompt);
 
   const response = await fetch(
-    "https://api.replicate.com/v1/models/kwaivgi/kling-v1-5/predictions",
+    "https://api.replicate.com/v1/models/kwaivgi/kling-v1.5/predictions",
     {
       method: "POST",
       headers: {
         Authorization: `Bearer ${REPLICATE_API_KEY}`,
         "Content-Type": "application/json",
-        "Prefer": "wait",
       },
       body: JSON.stringify({
         input: {
