@@ -86,33 +86,34 @@ function sanitizePrompt(prompt) {
   return safe;
 }
 
-// ===== СТИЛИ ПО НАСТРОЕНИЮ =====
+// ===== СТИЛИ ПО НАСТРОЕНИЮ (DARK THEME) =====
+// Object-focus style: main dream object sharp + vivid in foreground, background atmospheric and slightly defocused
 const moodImageStyles = {
-  'тревожный': 'DARK OMINOUS atmosphere: churning storm clouds in deep charcoal and bruised violet, jagged obsidian spires piercing suffocating fog, ominous glowing mist in crumbling ruins, eerie cold light seeping through cracks, unsettling shadows with hidden shapes, deeply haunting surrealist horror art.',
-  'anxious':   'DARK OMINOUS atmosphere: churning storm clouds in deep charcoal and bruised violet, jagged obsidian spires, ominous glowing mist in crumbling ruins, eerie cold light seeping through cracks, unsettling shadows, deeply haunting surrealist horror art.',
-  'мечтательный': 'SOFT LUMINOUS paradise: floating golden meadows above candy-floss clouds, shimmering waterfalls cascading into rainbow mist, warm peach and rose dawn light, delicate glowing fireflies and luminescent flowers, gentle bokeh stars everywhere, impressionist watercolor texture, joyful serene atmosphere.',
-  'dreamy':       'SOFT LUMINOUS paradise: floating golden meadows above candy-floss clouds, shimmering waterfalls in rainbow mist, warm peach and rose dawn light, glowing fireflies, gentle bokeh, impressionist watercolor, joyful serene atmosphere.',
-  'вдохновляющий': 'RADIANT TRANSCENDENT vision: soaring crystal mountains catching divine golden light, celestial aurora ribbons across infinite sky, triumphant beams of sacred light breaking through clouds, glowing sacred geometry patterns, overwhelming sublime beauty, epic fantasy masterpiece art.',
-  'inspiring':     'RADIANT TRANSCENDENT vision: soaring crystal mountains catching divine golden light, celestial aurora ribbons, triumphant beams of sacred light, glowing sacred geometry, overwhelming sublime beauty, epic fantasy masterpiece.',
-  'трансформирующий': 'COSMIC METAMORPHOSIS: swirling galaxy vortex pulling reality apart, chrysalis of pure light amid darkness, dramatic contrast of deep shadow and brilliant rebirth radiance, phoenix energy rising from obsidian water, dual realms colliding in spectacular display, powerful surrealist epic.',
-  'transformative':   'COSMIC METAMORPHOSIS: swirling galaxy vortex, chrysalis of pure light, dramatic shadow and rebirth radiance, phoenix energy rising, dual realms colliding, powerful surrealist epic.',
-  'загадочный': 'MYSTERIOUS MOONLIT realm: ancient fog-shrouded ruins draped in silver mist, glowing cryptic portal in a dark forest, floating runestones with faint ethereal light, deep midnight indigo and viridian atmosphere, mysterious lanterns guiding through labyrinth corridors, enigmatic and atmospheric.',
-  'mysterious': 'MYSTERIOUS MOONLIT realm: ancient fog-shrouded ruins, glowing cryptic portal in dark forest, floating runestones, deep midnight indigo atmosphere, mysterious lanterns in labyrinth corridors, enigmatic and atmospheric.',
-  'default': 'Surreal dream artwork in Salvador Dali style, deep purples and midnight blues with golden accents, mystical dramatic lighting, cinematic quality.',
+  'тревожный': 'CINEMATIC DEPTH-OF-FIELD: the main dream object is sharp, large, vivid and dominant in the foreground with dramatic rim lighting. Background: churning storm clouds in deep charcoal and bruised violet, slightly defocused and atmospheric. The dream subject stands out bold and clear against the dark moody backdrop. Haunting surrealist art, deep contrast.',
+  'anxious':   'CINEMATIC DEPTH-OF-FIELD: main dream object sharp and vivid in foreground, dramatically lit. Background: dark storm clouds, bruised violet fog, slightly out of focus. Bold contrast between subject and atmosphere.',
+  'мечтательный': 'CINEMATIC DEPTH-OF-FIELD: main dream object large, sharp and glowing in foreground, soft warm light from behind. Background: golden meadows and candy-floss clouds softly blurred. Subject is the visual star — vibrant and clear. Soft pastel bokeh surrounds it.',
+  'dreamy':       'CINEMATIC DEPTH-OF-FIELD: main dream subject sharp and luminous in foreground. Background: soft golden light, blurred pastel clouds. Subject glows warmly against dreamy bokeh backdrop.',
+  'вдохновляющий': 'CINEMATIC DEPTH-OF-FIELD: main dream object crisp and radiant in foreground, bathed in divine golden light. Background: aurora ribbons and crystal peaks, slightly defocused. Subject commands the frame with overwhelming presence.',
+  'inspiring':     'CINEMATIC DEPTH-OF-FIELD: dream subject sharp and triumphant in foreground, glowing with divine light. Background: soft aurora and crystal mountains, gently blurred. Majestic framing.',
+  'трансформирующий': 'CINEMATIC DEPTH-OF-FIELD: main dream object vivid and sharp in foreground, dramatic dual-tone lighting. Background: galaxy vortex and cosmic light, slightly blurred. Subject feels powerful and transformative against the cosmic backdrop.',
+  'transformative':   'CINEMATIC DEPTH-OF-FIELD: dream subject sharp and powerful in foreground. Background: blurred cosmic vortex, light and shadow. Bold contrast.',
+  'загадочный': 'CINEMATIC DEPTH-OF-FIELD: main dream object sharp and glowing with faint ethereal light in foreground. Background: moonlit ruins and silver mist, softly defocused. Subject is mysterious and clear against the atmospheric dark backdrop.',
+  'mysterious': 'CINEMATIC DEPTH-OF-FIELD: dream subject sharp and lit with ethereal glow in foreground. Background: softly blurred moonlit fog and ruins. Enigmatic and clear.',
+  'default': 'CINEMATIC DEPTH-OF-FIELD: main dream subject sharp, vivid and dominant in foreground. Background defocused with deep purples and midnight blues, golden atmospheric light. Subject stands bold and clear. Surrealist dream art, cinematic quality.',
 };
 
 const moodVideoStyles = {
-  'тревожный': 'DARK HAUNTING cinematic video — slow ominous camera gliding through churning storm clouds and oppressive shadow, eerie cold mist curling around crumbling mystical ruins, distant violet lightning flashes illuminating jagged forms, unsettling atmospheric dread, deep charcoal and bruised purple palette, gothic surreal pacing. ',
-  'anxious':   'DARK HAUNTING cinematic video — slow ominous camera through churning storm clouds, eerie cold mist in crumbling ruins, distant lightning flashes, unsettling atmospheric dread, deep charcoal and bruised purple palette. ',
-  'мечтательный': 'SOFT LUMINOUS dreamy cinematic video — gentle floating camera drifting through golden flower meadows and pastel skies, luminous fireflies and flower petals drifting in warm dawn light, soft bokeh particles, serene impressionist mood, peaceful uplifting atmosphere, slow romantic camera movements. ',
-  'dreamy':       'SOFT LUMINOUS dreamy cinematic video — gentle floating camera through golden meadows and pastel skies, luminous fireflies and petals in warm dawn light, soft bokeh, serene impressionist mood, peaceful uplifting. ',
-  'вдохновляющий': 'TRIUMPHANT CELESTIAL cinematic video — sweeping camera soaring upward through radiant light pillars and aurora ribbons, crystal mountain peaks bathed in golden sunrise, ascending motion full of power and grace, overwhelming divine energy, majestic wide shots, epic inspiring mood. ',
-  'inspiring':     'TRIUMPHANT CELESTIAL cinematic video — sweeping camera soaring through radiant light pillars and aurora, crystal peaks in golden sunrise, ascending motion, majestic wide shots, epic inspiring mood. ',
-  'трансформирующий': 'EPIC COSMIC transformation cinematic video — slow dramatic camera witnessing galaxies spiral and reality reshape, duality of dark and brilliant light, energy vortex drawing toward blazing center, powerful emotional intensity, awe-inspiring cosmic scale, cinematic surrealism. ',
-  'transformative':   'EPIC COSMIC transformation cinematic video — galaxies spiral, duality of dark and brilliant light, energy vortex toward blazing center, powerful intensity, awe-inspiring scale. ',
-  'загадочный': 'ENIGMATIC FOGBOUND cinematic video — slow gliding camera through moonlit ancient ruins and crystal caves, cryptic glowing symbols pulsing faintly in shadows, deep atmospheric fog with ethereal light leaks, mysterious lanterns drifting past, haunting meditative pacing. ',
-  'mysterious': 'ENIGMATIC FOGBOUND cinematic video — slow camera through moonlit ruins and crystal caves, cryptic glowing symbols, atmospheric fog with ethereal light leaks, mysterious drifting lanterns, haunting pacing. ',
-  'default': 'Surreal mystical dreamscape cinematic video, slow epic camera movement, deep purples and midnight blues with golden light rays, magical atmospheric fog, cinematic quality, ethereal particles floating. ',
+  'тревожный': 'CINEMATIC depth-of-field video — slow push-in toward the sharp vivid main dream object in foreground, background of churning storm clouds and bruised violet atmosphere gently defocused behind it. Subject is bold, clear, dramatically lit. Slow haunting camera, deep shadow, gothic surreal mood. ',
+  'anxious':   'CINEMATIC depth-of-field video — main subject sharp and prominent in foreground, dark defocused storm atmosphere behind. Slow ominous push-in, dramatic rim light on subject. ',
+  'мечтательный': 'CINEMATIC depth-of-field video — slow gentle orbit around the vivid sharp main dream object, warm golden bokeh and soft pastel clouds blurred in background. Subject luminous and clear. Dreamy floating motion, warm light, serene mood. ',
+  'dreamy':       'CINEMATIC depth-of-field video — sharp luminous subject in foreground, soft golden bokeh behind. Slow gentle camera drift, warm and dreamy. ',
+  'вдохновляющий': 'CINEMATIC depth-of-field video — slow ascending push toward sharp radiant main subject, divine golden light halos it, background aurora and peaks softly blurred. Majestic ascending movement, overwhelmingly beautiful. ',
+  'inspiring':     'CINEMATIC depth-of-field video — vivid sharp dream subject rising in foreground, defocused radiant background. Slow upward camera, epic golden light. ',
+  'трансформирующий': 'CINEMATIC depth-of-field video — dramatic slow rotation around the sharp vivid dream subject, cosmic vortex and light-dark contrast softly defocused behind it. Subject feels powerful and central. Epic surreal mood. ',
+  'transformative':   'CINEMATIC depth-of-field video — sharp powerful subject in foreground, cosmic blurred backdrop. Slow dramatic camera. ',
+  'загадочный': 'CINEMATIC depth-of-field video — slow gliding push toward sharp glowing main dream object, moonlit ruins and silver mist defocused in background. Subject mysterious and luminous. Meditative haunting pacing. ',
+  'mysterious': 'CINEMATIC depth-of-field video — sharp ethereal subject in foreground, blurred moonlit fog behind. Slow mysterious camera. ',
+  'default': 'CINEMATIC depth-of-field video — slow push-in toward the sharp vivid main dream object in foreground, deep purple and midnight blue atmospheric bokeh behind. Subject bold and clear. Surreal dream mood, cinematic quality. ',
 };
 
 // ===== DALL-E 3: ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЯ =====
@@ -125,8 +126,7 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
   let safePrompt;
 
   if (theme === 'light') {
-    // Light theme: stylized cartoon illustration with soft dawn palette
-    safePrompt = `Stylized dream illustration, semi-cartoon slightly surreal clean style. Soft dawn color palette: warm peach, blush rose, gentle lavender, golden honey, airy sky blue. Smooth pastel gradients, soft diffused lighting, dreamlike warm glow. Main objects from the dream must be clearly visible, large, detailed and centered in composition — place them prominently in the foreground. Vibrant but harmonious pastel colors. Smooth shading, high detail, modern illustration style. Cinematic balanced composition, background supports subjects without overpowering. Sharp focus on main subjects. SCENE ELEMENTS: ${cleaned}. No real people, no children, no faces. Safe for all audiences.`;
+    safePrompt = `A stylized, slightly cartoonish dream illustration. Semi-cartoon, slightly surreal but clean and readable style. Soft dreamy lighting with gentle warm glow. Vibrant but controlled pastel colors — warm peach, blush rose, gentle lavender, golden honey, airy sky blue. Smooth shading, modern high-quality 3D illustration look. The main dream objects must be CENTRAL, LARGE, and visually dominant — placed prominently in the foreground, fully formed and clearly recognizable. Background supports the scene with soft bokeh and gentle atmosphere, never overpowering. Do NOT distort or merge important objects. Sharp focus on main subjects. SCENE ELEMENTS: ${cleaned}. No real people, no children, no faces. Safe for all audiences.`;
   } else {
     // Dark theme: mood-based dramatic style
     const moodStyle = moodImageStyles[mood] || moodImageStyles['default'];
@@ -151,11 +151,14 @@ async function createVideoTask(videoPrompt, theme = 'dark', mood = '') {
 
   const moodStyle = moodVideoStyles[mood] || moodVideoStyles['default'];
 
-  const themeOverlay = theme === 'light'
-    ? 'Soft pastel tones, gentle light, airy atmosphere. '
-    : 'Deep rich colors, dramatic shadows, cinematic. ';
-
-  const finalPrompt = moodStyle + themeOverlay + sanitizePrompt(videoPrompt);
+  let finalPrompt;
+  if (theme === 'light') {
+    const cleaned = sanitizePrompt(videoPrompt);
+    finalPrompt = `A stylized slightly cartoonish dream scene. Semi-cartoon surreal clean style. Soft dreamy lighting with gentle warm glow. Vibrant but controlled pastel colors. Smooth shading, modern high-quality 3D look. The main dream objects are CENTRAL, LARGE and dominant in foreground — fully formed, clearly visible and sharply focused. Background supports with soft bokeh and gentle atmosphere. Slow cinematic camera movement (gentle push-in or slow orbit). Subtle environmental motion — wind, floating particles, soft movement. Dreamy slightly magical mood. Calm immersive feeling. No abstract chaos, no blurry main objects, no overcrowded composition. No people, no faces. SCENE ELEMENTS: ${cleaned}`;
+  } else {
+    const themeOverlay = 'Deep rich colors, dramatic shadows, cinematic depth of field. ';
+    finalPrompt = moodStyle + themeOverlay + sanitizePrompt(videoPrompt);
+  }
 
   const response = await fetch(
     "https://api.replicate.com/v1/models/kwaivgi/kling-v1.6-standard/predictions",
