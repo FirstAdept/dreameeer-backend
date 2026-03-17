@@ -347,30 +347,18 @@ app.post("/api/dream/analyze", async (req, res) => {
     const analysis = await analyzeDream(dreamText, mode, language);
     console.log("✅ Анализ завершён");
 
-    // 2. DALL-E + Видео параллельно
+    // 2. Только DALL-E (видео — по запросу пользователя)
     let imageUrl = null;
-    let taskId = null;
+    const taskId = null;
 
     if (analysis.videoPrompt) {
       const mood = analysis.mood || "";
       console.log(`🎭 Настроение сна: ${mood}`);
-      const [imageResult, videoResult] = await Promise.allSettled([
-        generateImage(analysis.videoPrompt, theme, mood),
-        createVideoTask(analysis.videoPrompt, theme, mood),
-      ]);
-
-      if (imageResult.status === "fulfilled") {
-        imageUrl = imageResult.value;
+      try {
+        imageUrl = await generateImage(analysis.videoPrompt, theme, mood);
         console.log("🎨 Изображение готово");
-      } else {
-        console.error("⚠️ Ошибка DALL-E:", imageResult.reason?.message);
-      }
-
-      if (videoResult.status === "fulfilled") {
-        taskId = videoResult.value.data?.task_id || null;
-        console.log("🎬 Видео запущено:", taskId);
-      } else {
-        console.error("⚠️ Ошибка Replicate:", videoResult.reason?.message);
+      } catch (e: any) {
+        console.error("⚠️ Ошибка DALL-E:", e?.message);
       }
     }
 
@@ -429,6 +417,33 @@ app.get("/api/dream/video/:taskId", async (req, res) => {
   } catch (err) {
     console.error("❌ Ошибка проверки видео:", err);
     res.status(500).json({ error: "Ошибка при проверке статуса видео", details: err.message });
+  }
+});
+
+// POST /api/dream/video/create — запуск генерации видео по запросу
+app.post("/api/dream/video/create", async (req, res) => {
+  try {
+    const { videoPrompt, theme = "dark", mood = "", deviceId } = req.body;
+    if (!videoPrompt) return res.status(400).json({ error: "videoPrompt required" });
+
+    // Проверяем подписку
+    if (deviceId) {
+      const user = await getUser(deviceId);
+      const isSubscribed = user.subscription.status === "active";
+      if (!isSubscribed) {
+        return res.status(402).json({ error: "subscription_required" });
+      }
+    }
+
+    const result = await createVideoTask(videoPrompt, theme, mood);
+    const taskId = result.data?.task_id || null;
+    if (!taskId) return res.status(500).json({ error: "Не удалось запустить генерацию видео" });
+
+    console.log("🎬 Видео запущено по запросу:", taskId);
+    res.json({ success: true, taskId });
+  } catch (err) {
+    console.error("❌ /api/dream/video/create:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 

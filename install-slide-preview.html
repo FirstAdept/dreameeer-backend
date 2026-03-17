@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstallSlide Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a0a2e;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: #0f0520;
+    position: relative;
+    overflow: hidden;
+    border-radius: 40px;
+    border: 2px solid rgba(255,255,255,0.1);
+    margin: 20px;
+    box-shadow: 0 0 60px rgba(124,58,237,0.3);
+  }
+  .bg-screen {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #0f0520 0%, #1a0535 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; padding: 40px;
+    opacity: 0.4;
+  }
+  .bg-screen .moon { font-size: 64px; }
+  .bg-screen .title { font-size: 18px; color: rgba(255,255,255,0.3); text-align: center; }
+
+  /* Overlay */
+  .overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end;
+  }
+
+  /* Sheet */
+  .sheet {
+    width: 100%;
+    background: linear-gradient(180deg, #0f0520 0%, #1a0535 100%);
+    border-radius: 28px 28px 0 0;
+    padding: 20px 20px 40px;
+    border: 1px solid rgba(167,139,250,0.2);
+    border-bottom: none;
+    box-shadow: 0 -4px 60px rgba(124,58,237,0.3);
+  }
+
+  .handle {
+    width: 40px; height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.2);
+    margin: 0 auto 20px;
+  }
+
+  .header { text-align: center; margin-bottom: 20px; }
+  .header .emoji { font-size: 40px; margin-bottom: 8px; display: block; }
+  .header h2 { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+  .header p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(167,139,250,0.1);
+    border: 1px solid rgba(167,139,250,0.25);
+    border-radius: 100px; padding: 4px 12px;
+    font-size: 11px; color: #a78bfa; font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .step {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px; padding: 12px 14px;
+  }
+  .step-num {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: white;
+  }
+  .step-text { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+  .step-sub { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  .tip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 18px;
+  }
+  .tip span { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.4; }
+  .tip strong { color: rgba(255,255,255,0.75); }
+
+  .close-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border: none; border-radius: 14px;
+    font-size: 15px; font-weight: 700; color: white;
+    cursor: pointer;
+  }
+
+  /* Toggle */
+  .toggle {
+    position: fixed; bottom: 30px; right: 30px;
+    display: flex; gap: 12px;
+  }
+  .toggle button {
+    padding: 10px 18px; border-radius: 20px; border: none;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .toggle .ios-btn { background: #1d1d1f; color: #a78bfa; border: 1px solid #a78bfa; }
+  .toggle .android-btn { background: #1d1d1f; color: #4ade80; border: 1px solid #4ade80; }
+  .toggle .active { opacity: 1; }
+  .toggle button:not(.active) { opacity: 0.5; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- Faded background (analysis screen) -->
+  <div class="bg-screen">
+    <div class="moon">🌙</div>
+    <div class="title">Экран с результатами анализа сна</div>
+  </div>
+
+  <!-- Overlay + Sheet -->
+  <div class="overlay">
+    <div class="sheet">
+      <div class="handle"></div>
+
+      <div class="header">
+        <span class="emoji">📲</span>
+        <h2>Добавь на экран домой</h2>
+        <p id="subtitle">Открой как приложение — без браузера</p>
+      </div>
+
+      <div class="badge" id="badge">🍎 iPhone / iPad</div>
+
+      <div class="steps" id="steps">
+        <!-- iOS steps by default -->
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-text">Нажми кнопку «Поделиться»</div>
+            <div class="step-sub">(значок □↑ внизу Safari)</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-text">Прокрути список вниз</div>
+            <div class="step-sub">до пункта «На экран «Домой»»</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-text">Нажми «Добавить»</div>
+            <div class="step-sub">и приложение появится на рабочем столе</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tip" id="tip">
+        <span style="font-size:18px">💡</span>
+        <span>Пункт «На экран "Домой"» находится в середине списка — <strong>прокрути шторку вниз</strong></span>
+      </div>
+
+      <button class="close-btn">Понятно, добавлю позже</button>
+    </div>
+  </div>
+</div>
+
+<!-- Platform toggle -->
+<div class="toggle">
+  <button class="ios-btn active" onclick="setIOS()">🍎 iOS</button>
+  <button class="android-btn" onclick="setAndroid()">🤖 Android</button>
+</div>
+
+<script>
+const iosSteps = [
+  { text: 'Нажми кнопку «Поделиться»', sub: '(значок □↑ внизу Safari)' },
+  { text: 'Прокрути список вниз', sub: 'до пункта «На экран «Домой»»' },
+  { text: 'Нажми «Добавить»', sub: 'и приложение появится на рабочем столе' },
+];
+const androidSteps = [
+  { text: 'Нажми ⋮ в правом углу Chrome', sub: '(три точки вверху)' },
+  { text: 'Выбери «Добавить на гл. экран»', sub: 'или «Установить приложение»' },
+  { text: 'Нажми «Добавить»', sub: 'и приложение появится на рабочем столе' },
+];
+
+function renderSteps(steps) {
+  return steps.map((s, i) => `
+    <div class="step">
+      <div class="step-num">${i+1}</div>
+      <div>
+        <div class="step-text">${s.text}</div>
+        <div class="step-sub">${s.sub}</div>
+      </div>
+    </div>`).join('');
+}
+
+function setIOS() {
+  document.getElementById('subtitle').textContent = 'Открой как приложение — без браузера';
+  document.getElementById('badge').innerHTML = '🍎 iPhone / iPad';
+  document.getElementById('badge').style.color = '#a78bfa';
+  document.getElementById('steps').innerHTML = renderSteps(iosSteps);
+  document.getElementById('tip').style.display = 'flex';
+  document.querySelector('.ios-btn').classList.add('active');
+  document.querySelector('.android-btn').classList.remove('active');
+}
+
+function setAndroid() {
+  document.getElementById('subtitle').textContent = 'Установи как приложение за секунду';
+  document.getElementById('badge').innerHTML = '🤖 Android';
+  document.getElementById('badge').style.color = '#4ade80';
+  document.getElementById('steps').innerHTML = renderSteps(androidSteps);
+  document.getElementById('tip').style.display = 'none';
+  document.querySelector('.android-btn').classList.add('active');
+  document.querySelector('.ios-btn').classList.remove('active');
+}
+</script>
+</body>
+</html>
