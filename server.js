@@ -361,7 +361,7 @@ app.post("/api/dream/analyze", async (req, res) => {
       try {
         imageUrl = await generateImage(analysis.videoPrompt, theme, mood);
         console.log("🎨 Изображение готово");
-      } catch (e: any) {
+      } catch (e) {
         console.error("⚠️ Ошибка DALL-E:", e?.message);
       }
     }
