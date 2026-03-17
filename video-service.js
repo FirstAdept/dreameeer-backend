@@ -43,7 +43,8 @@ async function analyzeDream(dreamText, mode = 'default', language = 'ru') {
     : mode === 'loff'
     ? `  "interpretation": "Толкование по Лоффу (3-5 предложений)",
   "interpretSource": "По Лоффу",`
-    : `  "interpretation": "Общее толкование сна (3-5 предложений). Живое, образное, соответствующее настроению сна.",`;
+    : `  "interpretation": "Общее толкование сна (3-5 предложений). Живое, образное, соответствующее настроению сна.",
+  "interpretSource": "Dreameeer",`;
 
   const systemPrompt = `Ты — Dreameeer, мистический ИИ-толкователь снов. ${modeInstructions[mode] || modeInstructions.default}
 ${langInstruction}
@@ -175,70 +176,51 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
 async function createVideoTask(videoPrompt, theme = 'dark', mood = '', imageUrl = null) {
   console.log(`🎬 Оживляю изображение [mood:${mood}, theme:${theme}]...`);
 
+  // Kling v1.5 image-to-video (анимируем DALL-E картинку)
+  const motionPrompt = theme === 'light'
+    ? 'gentle dreamy float, soft sparkles drifting, warm light shimmer, subtle breeze, slow cinematic push-in, magical atmosphere'
+    : 'slow cinematic drift, ethereal particles floating, dramatic atmospheric depth, moody light pulse, slow epic push-in';
+
+  const input = {
+    prompt: motionPrompt,
+    duration: 5,
+    aspect_ratio: "1:1",
+    cfg_scale: 0.5,
+  };
+
   if (imageUrl) {
-    // SVD (Stable Video Diffusion) — быстрее, ~30-60 сек
-    console.log("🖼 SVD image-to-video:", imageUrl.slice(0, 60));
-    const input = {
-      input_image: imageUrl,
-      video_length: "25_frames_with_svd",
-      sizing_strategy: "maintain_aspect_ratio",
-      frames_per_second: 6,
-      motion_bucket_id: 80,   // 0-255, ниже = плавнее движение
-      cond_aug: 0.02,
-    };
-
-    const response = await fetch(
-      "https://api.replicate.com/v1/models/stability-ai/stable-video-diffusion/predictions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${REPLICATE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ input }),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`SVD Replicate ошибка: ${response.status} — ${error}`);
-    }
-
-    const result = await response.json();
-    console.log("📋 SVD Prediction:", result.id, "status:", result.status, "error:", result.error || "none");
-    if (!result.id) throw new Error(`SVD не вернул ID: ${JSON.stringify(result)}`);
-    return { data: { task_id: result.id } };
-
+    input.start_image = imageUrl;
+    console.log("🖼 Kling image-to-video:", imageUrl.slice(0, 60));
   } else {
-    // Fallback: Kling text-to-video если нет картинки
-    console.log("⚠️ Нет imageUrl — fallback на Kling text-to-video");
-    const motionPrompt = (theme === 'light'
+    console.log("⚠️ Нет imageUrl — text-to-video");
+    input.prompt = (theme === 'light'
       ? 'Stylized cartoon dream scene, soft pastel colors, gentle dreamy float, magical atmosphere. '
       : 'Cinematic dream scene, deep purples and blues, slow epic camera, atmospheric depth. ')
       + sanitizePrompt(videoPrompt);
-
-    const response = await fetch(
-      "https://api.replicate.com/v1/models/kwaivgi/kling-v1.5-standard/predictions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${REPLICATE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ input: { prompt: motionPrompt, duration: 5, aspect_ratio: "9:16", cfg_scale: 0.5 } }),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Replicate ошибка: ${response.status} — ${error}`);
-    }
-
-    const result = await response.json();
-    console.log("📋 Kling Prediction:", result.id, "status:", result.status);
-    if (!result.id) throw new Error(`Replicate не вернул ID: ${JSON.stringify(result)}`);
-    return { data: { task_id: result.id } };
+    input.aspect_ratio = "9:16";
   }
+
+  const response = await fetch(
+    "https://api.replicate.com/v1/models/kwaivgi/kling-v1.5-standard/predictions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${REPLICATE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ input }),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Replicate ошибка: ${response.status} — ${error}`);
+  }
+
+  const result = await response.json();
+  console.log("📋 Kling Prediction:", result.id, "status:", result.status, "error:", result.error || "none");
+  if (!result.id) throw new Error(`Replicate не вернул ID: ${JSON.stringify(result)}`);
+  return { data: { task_id: result.id } };
 }
 
 // ===== REPLICATE: СТАТУС ВИДЕО =====
