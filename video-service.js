@@ -176,7 +176,7 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
 async function createVideoTask(videoPrompt, theme = 'dark', mood = '', imageUrl = null) {
   console.log(`🎬 Оживляю изображение [mood:${mood}, theme:${theme}]...`);
 
-  // Kling v1.5 image-to-video (анимируем DALL-E картинку)
+  // Kling v1.0 image-to-video (дешевле ~$0.07/видео)
   const motionPrompt = theme === 'light'
     ? 'gentle dreamy float, soft sparkles drifting, warm light shimmer, subtle breeze, slow cinematic push-in, magical atmosphere'
     : 'slow cinematic drift, ethereal particles floating, dramatic atmospheric depth, moody light pulse, slow epic push-in';
@@ -190,7 +190,7 @@ async function createVideoTask(videoPrompt, theme = 'dark', mood = '', imageUrl 
 
   if (imageUrl) {
     input.start_image = imageUrl;
-    console.log("🖼 Kling image-to-video:", imageUrl.slice(0, 60));
+    console.log("🖼 Kling v1 image-to-video:", imageUrl.slice(0, 60));
   } else {
     console.log("⚠️ Нет imageUrl — text-to-video");
     input.prompt = (theme === 'light'
@@ -201,7 +201,7 @@ async function createVideoTask(videoPrompt, theme = 'dark', mood = '', imageUrl 
   }
 
   const response = await fetch(
-    "https://api.replicate.com/v1/models/kwaivgi/kling-v1.5-standard/predictions",
+    "https://api.replicate.com/v1/models/kwaivgi/kling-v1/predictions",
     {
       method: "POST",
       headers: {
