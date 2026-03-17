@@ -653,6 +653,35 @@ app.get("/api/admin/users", adminAuth, async (req, res) => {
   }
 });
 
+// POST /api/admin/reset — очистить тестовые данные (оставить активных подписчиков)
+app.post("/api/admin/reset", adminAuth, async (req, res) => {
+  try {
+    let deletedDreams = 0;
+    let deletedUsers = 0;
+
+    if (Dream) {
+      const r = await Dream.deleteMany({});
+      deletedDreams = r.deletedCount;
+    }
+
+    if (User) {
+      // Удаляем всех БЕЗ активной подписки
+      const r = await User.deleteMany({
+        "subscription.status": { $ne: "active" }
+      });
+      deletedUsers = r.deletedCount;
+    }
+
+    res.json({
+      success: true,
+      deleted: { dreams: deletedDreams, users: deletedUsers },
+      message: `Удалено: ${deletedUsers} пользователей, ${deletedDreams} снов`,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /health
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString(), mongodb: !!User });
