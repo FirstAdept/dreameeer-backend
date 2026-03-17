@@ -158,7 +158,7 @@ async function createVideoTask(videoPrompt, theme = 'dark', mood = '') {
   const finalPrompt = moodStyle + themeOverlay + sanitizePrompt(videoPrompt);
 
   const response = await fetch(
-    "https://api.replicate.com/v1/models/kwaivgi/kling-v1.5-standard/predictions",
+    "https://api.replicate.com/v1/models/kwaivgi/kling-v1.6-standard/predictions",
     {
       method: "POST",
       headers: {
@@ -182,7 +182,8 @@ async function createVideoTask(videoPrompt, theme = 'dark', mood = '') {
   }
 
   const result = await response.json();
-  console.log("📋 Prediction ID:", result.id);
+  console.log("📋 Prediction:", result.id, "status:", result.status, "error:", result.error || "none");
+  if (!result.id) throw new Error(`Replicate не вернул ID: ${JSON.stringify(result)}`);
   return { data: { task_id: result.id } };
 }
 
@@ -199,7 +200,7 @@ async function checkVideoStatus(taskId) {
   }
 
   const result = await response.json();
-  console.log("📊 Статус:", result.status);
+  console.log("📊 Статус:", result.status, "| output:", JSON.stringify(result.output)?.slice(0, 100), "| error:", result.error || "none");
 
   if (result.status === "succeeded") {
     const videoUrl = Array.isArray(result.output) ? result.output[0] : result.output;
