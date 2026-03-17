@@ -460,7 +460,7 @@ app.get("/api/dream/video/:taskId", async (req, res) => {
   }
 });
 
-const VIDEO_MONTHLY_LIMIT = 10;
+const VIDEO_MONTHLY_LIMIT = 30;
 
 // POST /api/dream/video/create — запуск генерации видео по запросу
 app.post("/api/dream/video/create", async (req, res) => {
