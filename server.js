@@ -429,8 +429,8 @@ const VIDEO_MONTHLY_LIMIT = 10;
 // POST /api/dream/video/create — запуск генерации видео по запросу
 app.post("/api/dream/video/create", async (req, res) => {
   try {
-    const { videoPrompt, theme = "dark", mood = "", deviceId } = req.body;
-    if (!videoPrompt) return res.status(400).json({ error: "videoPrompt required" });
+    const { videoPrompt, theme = "dark", mood = "", deviceId, imageUrl = null } = req.body;
+    if (!videoPrompt && !imageUrl) return res.status(400).json({ error: "videoPrompt or imageUrl required" });
 
     // Проверяем подписку и месячный лимит видео
     if (deviceId) {
@@ -476,7 +476,7 @@ app.post("/api/dream/video/create", async (req, res) => {
       }
     }
 
-    const result = await createVideoTask(videoPrompt, theme, mood);
+    const result = await createVideoTask(videoPrompt, theme, mood, imageUrl);
     const taskId = result.data?.task_id || null;
     if (!taskId) return res.status(500).json({ error: "Не удалось запустить генерацию видео" });
 

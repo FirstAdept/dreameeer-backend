@@ -145,37 +145,44 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
   return response.data[0].url;
 }
 
-// ===== REPLICATE: ЗАПУСК ВИДЕО (MiniMax Video-01) =====
-async function createVideoTask(videoPrompt, theme = 'dark', mood = '') {
-  console.log(`🎬 Генерирую видео [mood:${mood}, theme:${theme}]...`);
+// ===== REPLICATE: ОЖИВЛЕНИЕ ИЗОБРАЖЕНИЯ (Kling image-to-video) =====
+async function createVideoTask(videoPrompt, theme = 'dark', mood = '', imageUrl = null) {
+  console.log(`🎬 Оживляю изображение [mood:${mood}, theme:${theme}]...`);
 
-  const moodStyle = moodVideoStyles[mood] || moodVideoStyles['default'];
+  // Короткий промт движения — не описание сцены, а анимация
+  const motionPrompt = theme === 'light'
+    ? 'gentle dreamy float, soft sparkles drifting, warm light shimmer, subtle breeze, slow cinematic push-in, magical atmosphere'
+    : 'slow cinematic drift, ethereal particles floating, dramatic atmospheric depth, moody light pulse, slow epic push-in';
 
-  let finalPrompt;
-  if (theme === 'light') {
-    const cleaned = sanitizePrompt(videoPrompt);
-    finalPrompt = `A stylized slightly cartoonish dream scene. Semi-cartoon surreal clean style. Soft dreamy lighting with gentle warm glow. Vibrant but controlled pastel colors. Smooth shading, modern high-quality 3D look. The main dream objects are CENTRAL, LARGE and dominant in foreground — fully formed, clearly visible and sharply focused. Background supports with soft bokeh and gentle atmosphere. Slow cinematic camera movement (gentle push-in or slow orbit). Subtle environmental motion — wind, floating particles, soft movement. Dreamy slightly magical mood. Calm immersive feeling. No abstract chaos, no blurry main objects, no overcrowded composition. No people, no faces. SCENE ELEMENTS: ${cleaned}`;
+  const input = {
+    prompt: motionPrompt,
+    duration: 5,
+    aspect_ratio: "1:1",
+    cfg_scale: 0.5,
+  };
+
+  // Если есть картинка — используем image-to-video
+  if (imageUrl) {
+    input.start_image = imageUrl;
+    console.log("🖼 Image-to-video режим:", imageUrl.slice(0, 60));
   } else {
-    const themeOverlay = 'Deep rich colors, dramatic shadows, cinematic depth of field. ';
-    finalPrompt = moodStyle + themeOverlay + sanitizePrompt(videoPrompt);
+    console.log("⚠️ Нет imageUrl — fallback на text-to-video");
+    input.prompt = (theme === 'light'
+      ? 'Stylized cartoon dream scene, soft pastel colors, gentle dreamy float, magical atmosphere. '
+      : 'Cinematic dream scene, deep purples and blues, slow epic camera, atmospheric depth. ')
+      + sanitizePrompt(videoPrompt);
+    input.aspect_ratio = "9:16";
   }
 
   const response = await fetch(
-    "https://api.replicate.com/v1/models/kwaivgi/kling-v1.6-standard/predictions",
+    "https://api.replicate.com/v1/models/kwaivgi/kling-v1.5-standard/predictions",
     {
       method: "POST",
       headers: {
         Authorization: `Bearer ${REPLICATE_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        input: {
-          prompt: finalPrompt,
-          duration: 5,
-          aspect_ratio: "9:16",
-          cfg_scale: 0.5,
-        }
-      }),
+      body: JSON.stringify({ input }),
     }
   );
 
