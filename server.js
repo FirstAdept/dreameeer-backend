@@ -2,6 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
+const { execSync } = require("child_process");
 const { analyzeDream, generateImage, createVideoTask, checkVideoStatus } = require("./video-service");
 
 const app = express();
@@ -402,6 +405,39 @@ app.post("/api/dream/analyze", async (req, res) => {
 });
 
 // GET /api/dream/video/:taskId — статус генерации видео
+// POST /api/dream/video/boomerang — создать boomerang-петлю из видео
+app.post("/api/dream/video/boomerang", async (req, res) => {
+  const { videoUrl } = req.body;
+  if (!videoUrl) return res.status(400).json({ error: "videoUrl required" });
+  const tmpDir = "/tmp";
+  const inFile  = path.join(tmpDir, `bm_in_${Date.now()}.mp4`);
+  const outFile = path.join(tmpDir, `bm_out_${Date.now()}.mp4`);
+  try {
+    console.log("🔄 Boomerang: качаю видео...");
+    const resp = await fetch(videoUrl);
+    if (!resp.ok) throw new Error("Не удалось скачать видео");
+    const buf = Buffer.from(await resp.arrayBuffer());
+    fs.writeFileSync(inFile, buf);
+
+    // ffmpeg: оригинал + реверс = seamless boomerang loop
+    execSync(
+      `ffmpeg -y -i "${inFile}" -filter_complex "[0:v]split[a][b];[b]reverse[c];[a][c]concat=n=2:v=1[out]" -map "[out]" -c:v libx264 -pix_fmt yuv420p "${outFile}"`,
+      { timeout: 60000 }
+    );
+
+    const data = fs.readFileSync(outFile);
+    const b64 = data.toString("base64");
+    console.log("✅ Boomerang готов:", Math.round(data.length / 1024), "KB");
+    res.json({ success: true, videoDataUrl: `data:video/mp4;base64,${b64}` });
+  } catch (err) {
+    console.error("❌ Boomerang error:", err.message);
+    res.status(500).json({ error: err.message });
+  } finally {
+    try { fs.unlinkSync(inFile); } catch {}
+    try { fs.unlinkSync(outFile); } catch {}
+  }
+});
+
 app.get("/api/dream/video/:taskId", async (req, res) => {
   try {
     const { taskId } = req.params;
