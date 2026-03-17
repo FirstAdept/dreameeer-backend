@@ -512,14 +512,18 @@ app.post("/api/dream/video/create", async (req, res) => {
       }
     }
 
+    console.log(`🎬 Запускаю видео [theme:${theme}, mood:${mood}, imageUrl:${imageUrl ? 'yes' : 'no'}]`);
     const result = await createVideoTask(videoPrompt, theme, mood, imageUrl);
     const taskId = result.data?.task_id || null;
-    if (!taskId) return res.status(500).json({ error: "Не удалось запустить генерацию видео" });
+    if (!taskId) {
+      console.error("❌ Kling не вернул taskId:", JSON.stringify(result));
+      return res.status(500).json({ error: "Не удалось запустить генерацию видео" });
+    }
 
     console.log("🎬 Видео запущено по запросу:", taskId);
     res.json({ success: true, taskId });
   } catch (err) {
-    console.error("❌ /api/dream/video/create:", err);
+    console.error("❌ /api/dream/video/create:", err.message, err.stack?.slice(0, 300));
     res.status(500).json({ error: err.message });
   }
 });
