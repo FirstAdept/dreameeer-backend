@@ -1,8 +1,31 @@
 require("dotenv").config();
 const OpenAI = require("openai");
+const cloudinary = require("cloudinary").v2;
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY || "";
+
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
+
+async function uploadToCloudinary(tempUrl) {
+  try {
+    const result = await cloudinary.uploader.upload(tempUrl, {
+      folder: "dreameeer",
+      resource_type: "image",
+    });
+    console.log("☁️ Cloudinary OK:", result.secure_url.slice(0, 60));
+    return result.secure_url;
+  } catch (err) {
+    console.warn("⚠️ Cloudinary upload failed, using temp URL:", err.message);
+    return tempUrl; // fallback — лучше временный URL, чем ничего
+  }
+}
 
 // ===== OPENAI: АНАЛИЗ СНА =====
 async function analyzeDream(dreamText, mode = 'default', language = 'ru') {
@@ -168,8 +191,9 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
     n: 1,
   });
 
-  console.log("✅ Изображение готово!");
-  return response.data[0].url;
+  const tempUrl = response.data[0].url;
+  console.log("✅ Изображение готово, загружаю на Cloudinary...");
+  return await uploadToCloudinary(tempUrl);
 }
 
 // ===== REPLICATE: ОЖИВЛЕНИЕ ИЗОБРАЖЕНИЯ (Kling image-to-video) =====

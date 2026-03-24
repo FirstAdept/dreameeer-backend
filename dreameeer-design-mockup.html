@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreameeer — Design Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    background: #1a1a2e;
+    padding: 40px 24px;
+    min-height: 100vh;
+  }
+
+  .page-title {
+    text-align: center;
+    color: #fff;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .page-subtitle {
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+    margin-bottom: 48px;
+  }
+
+  .themes-row {
+    display: flex;
+    gap: 48px;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .theme-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .theme-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ===== PHONE FRAME ===== */
+  .phone {
+    width: 390px;
+    min-height: 844px;
+    border-radius: 54px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+  }
+
+  /* ===== DARK THEME ===== */
+  .dark {
+    background: #050508;
+  }
+
+  .dark .orb1 {
+    position: absolute; width: 320px; height: 320px;
+    border-radius: 50%; filter: blur(80px);
+    background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%);
+    top: -80px; right: -60px; pointer-events: none;
+  }
+  .dark .orb2 {
+    position: absolute; width: 280px; height: 280px;
+    border-radius: 50%; filter: blur(80px);
+    background: radial-gradient(circle, rgba(236,72,153,0.18) 0%, transparent 70%);
+    bottom: 200px; left: -70px; pointer-events: none;
+  }
+
+  .dark .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 28px 0;
+    font-size: 15px; font-weight: 600; color: #f1f5f9;
+  }
+
+  .dark .header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px 0;
+  }
+
+  .dark .header-title {
+    font-size: 28px; font-weight: 800;
+    background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 40%, #f472b6 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .dark .theme-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(167,139,250,0.1);
+    border: 1.5px solid rgba(167,139,250,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .dark .greeting {
+    padding: 32px 24px 0;
+    font-size: 16px; color: rgba(241,245,249,0.6); line-height: 1.5;
+  }
+
+  .dark .greeting strong {
+    color: #f1f5f9; font-weight: 700;
+  }
+
+  .dark .textarea-wrap {
+    margin: 20px 24px 0;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px; overflow: hidden;
+  }
+
+  .dark .textarea-inner {
+    padding: 18px 20px;
+    font-size: 16px; color: rgba(241,245,249,0.5);
+    line-height: 1.6; min-height: 130px;
+    font-family: inherit;
+  }
+
+  .dark .mic-row {
+    display: flex; justify-content: flex-end; align-items: center;
+    padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.05);
+    gap: 8px;
+  }
+
+  .dark .char-count {
+    font-size: 12px; color: rgba(255,255,255,0.25);
+  }
+
+  .dark .mic-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(244,114,182,0.15));
+    border: 1.5px solid rgba(167,139,250,0.3);
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+
+  .dark .mode-row {
+    display: flex; gap: 8px; padding: 16px 24px 0; overflow-x: auto;
+  }
+
+  .dark .mode-chip {
+    padding: 7px 14px; border-radius: 100px; font-size: 12px; font-weight: 600;
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  .dark .mode-chip.active {
+    background: rgba(167,139,250,0.2); border: 1px solid rgba(167,139,250,0.5);
+    color: #c4b5fd;
+  }
+
+  .dark .mode-chip.inactive {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.4);
+  }
+
+  .dark .analyze-btn {
+    margin: 20px 24px 0;
+    width: calc(100% - 48px);
+    padding: 18px;
+    border-radius: 100px;
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+    border: none;
+    color: white; font-size: 17px; font-weight: 700;
+    text-align: center; letter-spacing: 0.3px;
+    box-shadow: 0 4px 24px rgba(124,58,237,0.4);
+    position: relative; overflow: hidden;
+  }
+
+  .dark .analyze-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  }
+
+  .dark .analyze-btn span { position: relative; }
+
+  .dark .limit-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 14px 24px 0;
+    font-size: 12px; color: rgba(255,255,255,0.3);
+  }
+
+  .dark .limit-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(167,139,250,0.5);
+  }
+
+  .dark .tab-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(5,5,8,0.85);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(30px);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 12px 8px 28px;
+  }
+
+  .dark .tab-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; font-size: 10px; font-weight: 500;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 6px 16px; border-radius: 12px;
+  }
+
+  .dark .tab-item.active { color: #a78bfa; }
+  .dark .tab-item.inactive { color: #475569; }
+
+  .dark .tab-icon { font-size: 22px; line-height: 1; }
+
+  /* ===== LIGHT THEME ===== */
+  .light {
+    background: linear-gradient(160deg, #f0eaff 0%, #fce4f0 40%, #e8f0ff 100%);
+  }
+
+  .light .orb1 {
+    position: absolute; width: 320px; height: 320px;
+    border-radius: 50%; filter: blur(80px);
+    background: radial-gradient(circle, rgba(168,100,255,0.22) 0%, transparent 70%);
+    top: -80px; right: -60px; opacity: 0.8; pointer-events: none;
+  }
+  .light .orb2 {
+    position: absolute; width: 280px; height: 280px;
+    border-radius: 50%; filter: blur(80px);
+    background: radial-gradient(circle, rgba(236,72,153,0.18) 0%, transparent 70%);
+    bottom: 200px; left: -70px; opacity: 0.7; pointer-events: none;
+  }
+
+  .light .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 28px 0;
+    font-size: 15px; font-weight: 600; color: #1a1030;
+  }
+
+  .light .header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px 0;
+  }
+
+  .light .header-title {
+    font-size: 28px; font-weight: 800;
+    background: linear-gradient(135deg, #6d28d9 0%, #a855f7 50%, #db2777 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .light .theme-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.65);
+    border: 1.5px solid rgba(168,85,247,0.3);
+    backdrop-filter: blur(16px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 2px 12px rgba(120,80,200,0.1), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  .light .greeting {
+    padding: 32px 24px 0;
+    font-size: 16px; color: #4a3f6b; line-height: 1.5;
+  }
+
+  .light .greeting strong { color: #1a1030; font-weight: 700; }
+
+  .light .textarea-wrap {
+    margin: 20px 24px 0;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(180,140,220,0.25);
+    border-radius: 20px; overflow: hidden;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 2px 16px rgba(120,80,200,0.06);
+  }
+
+  .light .textarea-inner {
+    padding: 18px 20px;
+    font-size: 16px; color: #b8acd4;
+    line-height: 1.6; min-height: 130px;
+    font-family: inherit;
+  }
+
+  .light .mic-row {
+    display: flex; justify-content: flex-end; align-items: center;
+    padding: 12px 16px; border-top: 1px solid rgba(180,140,220,0.15);
+    gap: 8px;
+  }
+
+  .light .char-count {
+    font-size: 12px; color: rgba(74,63,107,0.4);
+  }
+
+  .light .mic-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,0.65);
+    border: 1.5px solid rgba(168,85,247,0.3);
+    backdrop-filter: blur(16px);
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    box-shadow: 0 2px 12px rgba(120,80,200,0.1);
+  }
+
+  .light .mode-row {
+    display: flex; gap: 8px; padding: 16px 24px 0; overflow-x: auto;
+  }
+
+  .light .mode-chip {
+    padding: 7px 14px; border-radius: 100px; font-size: 12px; font-weight: 600;
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  .light .mode-chip.active {
+    background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35);
+    color: #6d28d9;
+  }
+
+  .light .mode-chip.inactive {
+    background: rgba(255,255,255,0.55); border: 1px solid rgba(180,140,220,0.25);
+    color: #9d92bb;
+    backdrop-filter: blur(16px);
+  }
+
+  .light .analyze-btn {
+    margin: 20px 24px 0;
+    width: calc(100% - 48px);
+    padding: 18px;
+    border-radius: 100px;
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);
+    border: none;
+    color: white; font-size: 17px; font-weight: 700;
+    text-align: center; letter-spacing: 0.3px;
+    box-shadow: 0 4px 24px rgba(124,58,237,0.35);
+    position: relative; overflow: hidden;
+  }
+
+  .light .analyze-btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+  }
+
+  .light .analyze-btn span { position: relative; }
+
+  .light .limit-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 14px 24px 0;
+    font-size: 12px; color: #9d92bb;
+  }
+
+  .light .limit-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(124,58,237,0.4);
+  }
+
+  .light .tab-bar {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.62);
+    border-top: 1px solid rgba(255,255,255,0.85);
+    backdrop-filter: blur(40px);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 12px 8px 28px;
+    box-shadow: 0 -4px 24px rgba(120,80,200,0.08);
+  }
+
+  .light .tab-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; font-size: 10px; font-weight: 500;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 6px 16px; border-radius: 12px;
+  }
+
+  .light .tab-item.active { color: #7c3aed; }
+  .light .tab-item.inactive { color: #9d92bb; }
+  .light .tab-icon { font-size: 22px; line-height: 1; }
+
+  /* ===== COLOR PALETTE ===== */
+  .palette-section {
+    margin-top: 60px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 32px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .palette-title {
+    color: #fff; font-size: 18px; font-weight: 700; margin-bottom: 24px;
+  }
+
+  .palette-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px;
+  }
+
+  .palette-col-title {
+    color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;
+  }
+
+  .color-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  }
+
+  .color-swatch {
+    width: 36px; height: 36px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15); flex-shrink: 0;
+  }
+
+  .color-info { flex: 1; }
+
+  .color-name {
+    font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8);
+    margin-bottom: 2px;
+  }
+
+  .color-value {
+    font-size: 11px; color: rgba(255,255,255,0.35); font-family: monospace;
+  }
+
+  .gradient-swatch {
+    width: 100%; height: 48px; border-radius: 12px; margin-bottom: 10px;
+  }
+
+  .note {
+    margin-top: 32px; text-align: center;
+    color: rgba(255,255,255,0.25); font-size: 12px; line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">🌙 Dreameeer — Design Mockup</div>
+<div class="page-subtitle">Главный экран · Тёмная и светлая темы</div>
+
+<div class="themes-row">
+
+  <!-- DARK -->
+  <div class="theme-block">
+    <div class="theme-label">🌑 Тёмная тема</div>
+    <div class="phone dark">
+      <div class="orb1"></div>
+      <div class="orb2"></div>
+
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●●</span>
+      </div>
+
+      <div class="header">
+        <div class="header-title">Dreameeer</div>
+        <div class="theme-btn">🌙</div>
+      </div>
+
+      <div class="greeting">
+        <strong>Доброй ночи.</strong><br>
+        Расскажи мне свой сон — я помогу его раскрыть.
+      </div>
+
+      <div class="textarea-wrap">
+        <div class="textarea-inner">
+          Опиши свой сон как можно подробнее…
+        </div>
+        <div class="mic-row">
+          <span class="char-count">0 / 2000</span>
+          <div class="mic-circle">🎙</div>
+        </div>
+      </div>
+
+      <div class="mode-row">
+        <div class="mode-chip active">✨ Общий</div>
+        <div class="mode-chip inactive">📖 По Миллеру</div>
+        <div class="mode-chip inactive">🧠 По Фрейду</div>
+        <div class="mode-chip inactive">🌿 По Лоффу</div>
+        <div class="mode-chip inactive">🎭 Все</div>
+      </div>
+
+      <div class="analyze-btn">
+        <span>✦ Расшифровать сон</span>
+      </div>
+
+      <div class="limit-row">
+        <div class="limit-dot"></div>
+        <span>Бесплатный анализ · 1 из 1</span>
+      </div>
+
+      <div style="height: 120px;"></div>
+
+      <div class="tab-bar">
+        <div class="tab-item active">
+          <div class="tab-icon">🏠</div>
+          <span>Главная</span>
+        </div>
+        <div class="tab-item inactive">
+          <div class="tab-icon">📓</div>
+          <span>Дневник</span>
+        </div>
+        <div class="tab-item inactive">
+          <div class="tab-icon">📊</div>
+          <span>Статы</span>
+        </div>
+        <div class="tab-item inactive">
+          <div class="tab-icon">⚙️</div>
+          <span>Настройки</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHT -->
+  <div class="theme-block">
+    <div class="theme-label">☀️ Светлая тема</div>
+    <div class="phone light">
+      <div class="orb1"></div>
+      <div class="orb2"></div>
+
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>●●●</span>
+      </div>
+
+      <div class="header">
+        <div class="header-title">Dreameeer</div>
+        <div class="theme-btn">☀️</div>
+      </div>
+
+      <div class="greeting">
+        <strong>Доброй ночи.</strong><br>
+        Расскажи мне свой сон — я помогу его раскрыть.
+      </div>
+
+      <div class="textarea-wrap">
+        <div class="textarea-inner">
+          Опиши свой сон как можно подробнее…
+        </div>
+        <div class="mic-row">
+          <span class="char-count">0 / 2000</span>
+          <div class="mic-circle">🎙</div>
+        </div>
+      </div>
+
+      <div class="mode-row">
+        <div class="mode-chip active">✨ Общий</div>
+        <div class="mode-chip inactive">📖 По Миллеру</div>
+        <div class="mode-chip inactive">🧠 По Фрейду</div>
+        <div class="mode-chip inactive">🌿 По Лоффу</div>
+        <div class="mode-chip inactive">🎭 Все</div>
+      </div>
+
+      <div class="analyze-btn">
+        <span>✦ Расшифровать сон</span>
+      </div>
+
+      <div class="limit-row">
+        <div class="limit-dot"></div>
+        <span>Бесплатный анализ · 1 из 1</span>
+      </div>
+
+      <div style="height: 120px;"></div>
+
+      <div class="tab-bar">
+        <div class="tab-item active">
+          <div class="tab-icon">🏠</div>
+          <span>Главная</span>
+        </div>
+        <div class="tab-item inactive">
+          <div class="tab-icon">📓</div>
+          <span>Дневник</span>
+        </div>
+        <div class="tab-item inactive">
+          <div class="tab-icon">📊</div>
+          <span>Статы</span>
+        </div>
+        <div class="tab-item inactive">
+          <div class="tab-icon">⚙️</div>
+          <span>Настройки</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- COLOR PALETTE -->
+<div class="palette-section">
+  <div class="palette-title">🎨 Цвета</div>
+
+  <div style="margin-bottom: 20px;">
+    <div class="palette-col-title">Акцентный градиент (кнопки, заголовок)</div>
+    <div class="gradient-swatch" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #ec4899 100%);"></div>
+    <div style="color: rgba(255,255,255,0.4); font-size: 12px; font-family: monospace;">#7c3aed → #a855f7 → #ec4899</div>
+  </div>
+
+  <div class="palette-grid">
+    <div>
+      <div class="palette-col-title">🌑 Тёмная тема</div>
+
+      <div class="color-row">
+        <div class="color-swatch" style="background: #050508;"></div>
+        <div class="color-info">
+          <div class="color-name">Фон</div>
+          <div class="color-value">#050508</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.22);"></div>
+        <div class="color-info">
+          <div class="color-name">Фон карточек</div>
+          <div class="color-value">rgba(139,92,246, 0.06)</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: #a78bfa;"></div>
+        <div class="color-info">
+          <div class="color-name">Акцент (фиолетовый)</div>
+          <div class="color-value">#a78bfa</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: #f472b6;"></div>
+        <div class="color-info">
+          <div class="color-name">Розовый</div>
+          <div class="color-value">#f472b6</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: #f1f5f9;"></div>
+        <div class="color-info">
+          <div class="color-name">Текст основной</div>
+          <div class="color-value">#f1f5f9</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: #94a3b8;"></div>
+        <div class="color-info">
+          <div class="color-name">Текст приглушённый</div>
+          <div class="color-value">#94a3b8</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="palette-col-title">☀️ Светлая тема</div>
+
+      <div class="color-row">
+        <div class="color-swatch" style="background: linear-gradient(160deg, #f0eaff 0%, #fce4f0 40%, #e8f0ff 100%);"></div>
+        <div class="color-info">
+          <div class="color-name">Фон (градиент)</div>
+          <div class="color-value">#f0eaff → #fce4f0 → #e8f0ff</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.75);"></div>
+        <div class="color-info">
+          <div class="color-name">Фон карточек (glass)</div>
+          <div class="color-value">rgba(255,255,255, 0.55)</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: #7c3aed;"></div>
+        <div class="color-info">
+          <div class="color-name">Акцент (фиолетовый)</div>
+          <div class="color-value">#7c3aed</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: #db2777;"></div>
+        <div class="color-info">
+          <div class="color-name">Розовый</div>
+          <div class="color-value">#db2777</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: #1a1030;"></div>
+        <div class="color-info">
+          <div class="color-name">Текст основной</div>
+          <div class="color-value">#1a1030</div>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-swatch" style="background: #4a3f6b;"></div>
+        <div class="color-info">
+          <div class="color-name">Текст приглушённый</div>
+          <div class="color-value">#4a3f6b</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    Шрифт: SF Pro Display / -apple-system / BlinkMacSystemFont<br>
+    Скругления: 20px (карточки) · 100px (кнопки/чипы) · 12px (мелкие)<br>
+    Эффекты: backdrop-filter blur(24–40px) + saturate(180%) на светлой теме
+  </div>
+</div>
+
+</body>
+</html>

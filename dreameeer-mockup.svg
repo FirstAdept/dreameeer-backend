@@ -1,0 +1,264 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 820" width="900" height="820" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <!-- Accent gradient (button / title) -->
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#7c3aed"/>
+      <stop offset="50%"  stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+
+    <!-- Dark bg gradient -->
+    <linearGradient id="darkBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a0010"/>
+      <stop offset="100%" stop-color="#050508"/>
+    </linearGradient>
+
+    <!-- Light bg gradient -->
+    <linearGradient id="lightBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#f0eaff"/>
+      <stop offset="40%"  stop-color="#fce4f0"/>
+      <stop offset="100%" stop-color="#e8f0ff"/>
+    </linearGradient>
+
+    <!-- Dark phone shadow -->
+    <filter id="shadowDark" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="20" stdDeviation="30" flood-color="#000" flood-opacity="0.7"/>
+    </filter>
+
+    <!-- Light phone shadow -->
+    <filter id="shadowLight" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="20" stdDeviation="30" flood-color="#8b5cf6" flood-opacity="0.25"/>
+    </filter>
+
+    <!-- Dark orb 1 -->
+    <radialGradient id="darkOrb1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#7c3aed" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Dark orb 2 -->
+    <radialGradient id="darkOrb2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#ec4899" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#ec4899" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Light orb 1 -->
+    <radialGradient id="lightOrb1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#a855f7" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Light orb 2 -->
+    <radialGradient id="lightOrb2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#ec4899" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#ec4899" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Clip for phone screens -->
+    <clipPath id="clipDark">
+      <rect x="40" y="40" width="360" height="740" rx="50"/>
+    </clipPath>
+    <clipPath id="clipLight">
+      <rect x="500" y="40" width="360" height="740" rx="50"/>
+    </clipPath>
+  </defs>
+
+  <!-- Page background -->
+  <rect width="900" height="820" fill="#13111a"/>
+
+  <!-- Labels -->
+  <text x="220" y="22" text-anchor="middle" fill="rgba(255,255,255,0.35)" font-size="12" font-weight="700" letter-spacing="2" text-transform="uppercase">🌑  ТЁМНАЯ ТЕМА</text>
+  <text x="680" y="22" text-anchor="middle" fill="rgba(255,255,255,0.35)" font-size="12" font-weight="700" letter-spacing="2">☀️  СВЕТЛАЯ ТЕМА</text>
+
+  <!-- ============================================================ -->
+  <!-- DARK PHONE                                                    -->
+  <!-- ============================================================ -->
+  <g id="phone-dark" filter="url(#shadowDark)">
+
+    <!-- Frame border -->
+    <rect x="38" y="38" width="364" height="744" rx="52" fill="#1a1a2e" stroke="#2d2b45" stroke-width="2"/>
+
+    <!-- Screen background -->
+    <rect x="40" y="40" width="360" height="740" rx="50" fill="url(#darkBg)"/>
+
+    <!-- Orbs -->
+    <g clip-path="url(#clipDark)">
+      <ellipse cx="360" cy="80" rx="200" ry="200" fill="url(#darkOrb1)" opacity="0.9"/>
+      <ellipse cx="80" cy="560" rx="180" ry="180" fill="url(#darkOrb2)" opacity="0.8"/>
+    </g>
+
+    <!-- Status bar -->
+    <text x="68" y="78" fill="#f1f5f9" font-size="14" font-weight="600">9:41</text>
+    <text x="372" y="78" fill="#f1f5f9" font-size="14" font-weight="600" text-anchor="end">●●●</text>
+
+    <!-- Header: title -->
+    <text x="68" y="128" fill="url(#accentGrad)" font-size="26" font-weight="800" letter-spacing="-0.5">Dreameeer</text>
+
+    <!-- Header: theme button -->
+    <circle cx="356" cy="118" r="20" fill="rgba(167,139,250,0.1)" stroke="rgba(167,139,250,0.3)" stroke-width="1.5"/>
+    <text x="356" y="124" text-anchor="middle" font-size="18">🌙</text>
+
+    <!-- Greeting -->
+    <text x="68" y="172" fill="#f1f5f9" font-size="15" font-weight="700">Доброй ночи.</text>
+    <text x="68" y="194" fill="rgba(241,245,249,0.5)" font-size="14">Расскажи свой сон — я помогу его раскрыть.</text>
+
+    <!-- Textarea -->
+    <rect x="60" y="212" width="280" height="135" rx="18" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+    <text x="80" y="244" fill="rgba(241,245,249,0.3)" font-size="14">Опиши свой сон как можно</text>
+    <text x="80" y="264" fill="rgba(241,245,249,0.3)" font-size="14">подробнее…</text>
+    <!-- Mic row divider -->
+    <line x1="60" y1="322" x2="340" y2="322" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+    <text x="280" y="338" fill="rgba(255,255,255,0.25)" font-size="11" text-anchor="end">0 / 2000</text>
+    <!-- Mic button -->
+    <circle cx="322" cy="332" r="14" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.3)" stroke-width="1.5"/>
+    <text x="322" y="337" text-anchor="middle" font-size="13">🎙</text>
+
+    <!-- Mode chips -->
+    <!-- Active chip -->
+    <rect x="60" y="360" width="68" height="28" rx="14" fill="rgba(167,139,250,0.18)" stroke="rgba(167,139,250,0.45)" stroke-width="1"/>
+    <text x="94" y="379" text-anchor="middle" fill="#c4b5fd" font-size="11" font-weight="600">✨ Общий</text>
+
+    <rect x="136" y="360" width="88" height="28" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <text x="180" y="379" text-anchor="middle" fill="rgba(255,255,255,0.38)" font-size="11" font-weight="600">📖 Миллер</text>
+
+    <rect x="232" y="360" width="82" height="28" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <text x="273" y="379" text-anchor="middle" fill="rgba(255,255,255,0.38)" font-size="11" font-weight="600">🧠 Фрейд</text>
+
+    <!-- Analyse button -->
+    <rect x="60" y="404" width="280" height="52" rx="26" fill="url(#accentGrad)"/>
+    <!-- Button shine -->
+    <rect x="60" y="404" width="280" height="26" rx="26" fill="rgba(255,255,255,0.12)"/>
+    <text x="200" y="436" text-anchor="middle" fill="white" font-size="16" font-weight="700" letter-spacing="0.3">✦  Расшифровать сон</text>
+
+    <!-- Limit text -->
+    <circle cx="178" cy="474" r="3" fill="rgba(167,139,250,0.5)"/>
+    <text x="188" y="478" fill="rgba(255,255,255,0.3)" font-size="12">Бесплатный анализ · 1 из 1</text>
+
+    <!-- Tab bar bg -->
+    <rect x="40" y="716" width="360" height="64" fill="rgba(5,5,8,0.88)" stroke="rgba(255,255,255,0.06)" stroke-width="0"/>
+    <line x1="40" y1="716" x2="400" y2="716" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+
+    <!-- Tab: Home (active) -->
+    <g>
+      <text x="110" y="739" text-anchor="middle" font-size="20">🏠</text>
+      <text x="110" y="757" text-anchor="middle" fill="#a78bfa" font-size="9" font-weight="600" letter-spacing="0.5">ГЛАВНАЯ</text>
+    </g>
+    <!-- Tab: Diary -->
+    <g>
+      <text x="200" y="739" text-anchor="middle" font-size="20">📓</text>
+      <text x="200" y="757" text-anchor="middle" fill="#475569" font-size="9" font-weight="600" letter-spacing="0.5">ДНЕВНИК</text>
+    </g>
+    <!-- Tab: Stats -->
+    <g>
+      <text x="290" y="739" text-anchor="middle" font-size="20">📊</text>
+      <text x="290" y="757" text-anchor="middle" fill="#475569" font-size="9" font-weight="600" letter-spacing="0.5">СТАТЫ</text>
+    </g>
+    <!-- Tab: Settings -->
+    <g>
+      <text x="370" y="739" text-anchor="middle" font-size="20">⚙️</text>
+      <text x="370" y="757" text-anchor="middle" fill="#475569" font-size="9" font-weight="600" letter-spacing="0.5">НАСТРОЙКИ</text>
+    </g>
+
+    <!-- Notch -->
+    <rect x="155" y="48" width="90" height="8" rx="4" fill="#1a1a2e"/>
+
+  </g>
+
+
+  <!-- ============================================================ -->
+  <!-- LIGHT PHONE                                                   -->
+  <!-- ============================================================ -->
+  <g id="phone-light" filter="url(#shadowLight)">
+
+    <!-- Frame border -->
+    <rect x="498" y="38" width="364" height="744" rx="52" fill="rgba(255,255,255,0.6)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+
+    <!-- Screen background -->
+    <rect x="500" y="40" width="360" height="740" rx="50" fill="url(#lightBg)"/>
+
+    <!-- Orbs -->
+    <g clip-path="url(#clipLight)">
+      <ellipse cx="820" cy="80" rx="200" ry="200" fill="url(#lightOrb1)" opacity="0.9"/>
+      <ellipse cx="540" cy="560" rx="180" ry="180" fill="url(#lightOrb2)" opacity="0.8"/>
+    </g>
+
+    <!-- Status bar -->
+    <text x="528" y="78" fill="#1a1030" font-size="14" font-weight="600">9:41</text>
+    <text x="832" y="78" fill="#1a1030" font-size="14" font-weight="600" text-anchor="end">●●●</text>
+
+    <!-- Header: title -->
+    <text x="528" y="128" fill="url(#accentGrad)" font-size="26" font-weight="800" letter-spacing="-0.5">Dreameeer</text>
+
+    <!-- Header: theme button (glass) -->
+    <circle cx="816" cy="118" r="20" fill="rgba(255,255,255,0.7)" stroke="rgba(168,85,247,0.3)" stroke-width="1.5"/>
+    <text x="816" y="124" text-anchor="middle" font-size="18">☀️</text>
+
+    <!-- Greeting -->
+    <text x="528" y="172" fill="#1a1030" font-size="15" font-weight="700">Доброй ночи.</text>
+    <text x="528" y="194" fill="#4a3f6b" font-size="14">Расскажи свой сон — я помогу его раскрыть.</text>
+
+    <!-- Textarea (glass) -->
+    <rect x="520" y="212" width="280" height="135" rx="18" fill="rgba(255,255,255,0.62)" stroke="rgba(180,140,220,0.28)" stroke-width="1"/>
+    <text x="540" y="244" fill="#b8acd4" font-size="14">Опиши свой сон как можно</text>
+    <text x="540" y="264" fill="#b8acd4" font-size="14">подробнее…</text>
+    <!-- Mic row divider -->
+    <line x1="520" y1="322" x2="800" y2="322" stroke="rgba(180,140,220,0.18)" stroke-width="1"/>
+    <text x="740" y="338" fill="rgba(74,63,107,0.4)" font-size="11" text-anchor="end">0 / 2000</text>
+    <!-- Mic button (glass) -->
+    <circle cx="782" cy="332" r="14" fill="rgba(255,255,255,0.7)" stroke="rgba(168,85,247,0.3)" stroke-width="1.5"/>
+    <text x="782" y="337" text-anchor="middle" font-size="13">🎙</text>
+
+    <!-- Mode chips -->
+    <!-- Active chip -->
+    <rect x="520" y="360" width="68" height="28" rx="14" fill="rgba(124,58,237,0.12)" stroke="rgba(124,58,237,0.38)" stroke-width="1"/>
+    <text x="554" y="379" text-anchor="middle" fill="#6d28d9" font-size="11" font-weight="600">✨ Общий</text>
+
+    <rect x="596" y="360" width="88" height="28" rx="14" fill="rgba(255,255,255,0.6)" stroke="rgba(180,140,220,0.28)" stroke-width="1"/>
+    <text x="640" y="379" text-anchor="middle" fill="#9d92bb" font-size="11" font-weight="600">📖 Миллер</text>
+
+    <rect x="692" y="360" width="82" height="28" rx="14" fill="rgba(255,255,255,0.6)" stroke="rgba(180,140,220,0.28)" stroke-width="1"/>
+    <text x="733" y="379" text-anchor="middle" fill="#9d92bb" font-size="11" font-weight="600">🧠 Фрейд</text>
+
+    <!-- Analyse button -->
+    <rect x="520" y="404" width="280" height="52" rx="26" fill="url(#accentGrad)"/>
+    <rect x="520" y="404" width="280" height="26" rx="26" fill="rgba(255,255,255,0.18)"/>
+    <text x="660" y="436" text-anchor="middle" fill="white" font-size="16" font-weight="700" letter-spacing="0.3">✦  Расшифровать сон</text>
+
+    <!-- Limit text -->
+    <circle cx="638" cy="474" r="3" fill="rgba(124,58,237,0.4)"/>
+    <text x="648" y="478" fill="#9d92bb" font-size="12">Бесплатный анализ · 1 из 1</text>
+
+    <!-- Tab bar bg (glass) -->
+    <rect x="500" y="716" width="360" height="64" fill="rgba(255,255,255,0.65)"/>
+    <line x1="500" y1="716" x2="860" y2="716" stroke="rgba(255,255,255,0.85)" stroke-width="1"/>
+
+    <!-- Tab: Home (active) -->
+    <g>
+      <text x="570" y="739" text-anchor="middle" font-size="20">🏠</text>
+      <text x="570" y="757" text-anchor="middle" fill="#7c3aed" font-size="9" font-weight="700" letter-spacing="0.5">ГЛАВНАЯ</text>
+    </g>
+    <!-- Tab: Diary -->
+    <g>
+      <text x="660" y="739" text-anchor="middle" font-size="20">📓</text>
+      <text x="660" y="757" text-anchor="middle" fill="#9d92bb" font-size="9" font-weight="600" letter-spacing="0.5">ДНЕВНИК</text>
+    </g>
+    <!-- Tab: Stats -->
+    <g>
+      <text x="750" y="739" text-anchor="middle" font-size="20">📊</text>
+      <text x="750" y="757" text-anchor="middle" fill="#9d92bb" font-size="9" font-weight="600" letter-spacing="0.5">СТАТЫ</text>
+    </g>
+    <!-- Tab: Settings -->
+    <g>
+      <text x="830" y="739" text-anchor="middle" font-size="20">⚙️</text>
+      <text x="830" y="757" text-anchor="middle" fill="#9d92bb" font-size="9" font-weight="600" letter-spacing="0.5">НАСТРОЙКИ</text>
+    </g>
+
+    <!-- Notch -->
+    <rect x="615" y="48" width="90" height="8" rx="4" fill="rgba(255,255,255,0.5)"/>
+
+  </g>
+
+  <!-- Bottom note -->
+  <text x="450" y="800" text-anchor="middle" fill="rgba(255,255,255,0.2)" font-size="11">Dreameeer · iOS / PWA · dreameeer.ru · Шрифт: SF Pro Display</text>
+
+</svg>
