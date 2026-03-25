@@ -188,7 +188,7 @@ app.post("/api/payment/create", async (req, res) => {
     }
 
     const payment = await createYookassaPayment(
-      "499.00",
+      "199.00",
       email || null,
       "Подписка Dreameeer на 30 дней",
       { deviceId }
@@ -602,7 +602,7 @@ app.get("/api/admin/stats", adminAuth, async (req, res) => {
 
     const costs = costAgg[0] || { totalAnalysis: 0, totalImage: 0, totalVideo: 0 };
     const totalCost = costs.totalAnalysis + costs.totalImage + costs.totalVideo;
-    const revenue = subscribers * 499;
+    const revenue = subscribers * 199;
     const costPerUser = totalUsers > 0 ? (totalCost / totalUsers).toFixed(2) : 0;
 
     res.json({
