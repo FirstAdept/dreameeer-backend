@@ -447,7 +447,7 @@
       <div class="stat-card green">
         <div class="stat-label">Выручка</div>
         <div class="stat-value">${data.finance.revenue_rub.toLocaleString('ru-RU')} ₽</div>
-        <div class="stat-sub">${data.users.subscribers} × 499 ₽</div>
+        <div class="stat-sub">${data.users.subscribers} × 199 ₽</div>
       </div>
       <div class="stat-card orange">
         <div class="stat-label">Расходы (AI)</div>
@@ -473,7 +473,7 @@
     document.getElementById('roi-section').innerHTML = `
       <div class="finance-row">
         <span class="finance-label">Доход на подписчика</span>
-        <span class="finance-value" style="color:#34d399">499 ₽ / мес</span>
+        <span class="finance-value" style="color:#34d399">199 ₽ / мес</span>
       </div>
       <div class="finance-row">
         <span class="finance-label">Расход на подписчика</span>
@@ -481,7 +481,7 @@
       </div>
       <div class="finance-row">
         <span class="finance-label">ROI на подписчика</span>
-        <span class="finance-value" style="color:#a78bfa">${costPerSub > 0 ? (((499 - costPerSub) / costPerSub) * 100).toFixed(0) : '∞'}%</span>
+        <span class="finance-value" style="color:#a78bfa">${costPerSub > 0 ? (((199 - costPerSub) / costPerSub) * 100).toFixed(0) : '∞'}%</span>
       </div>
     `;
 
