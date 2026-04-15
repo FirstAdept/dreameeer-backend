@@ -183,13 +183,38 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
     safePrompt = `${moodStyle} Cinematic dramatic lighting, rich saturated colors, sharp contrast. SCENE ELEMENTS: ${cleaned}. No real people, no children, no faces. Abstract symbolic imagery only. Safe for all audiences.`;
   }
 
-  const response = await client.images.generate({
-    model: "dall-e-3",
-    prompt: safePrompt,
-    size: "1024x1024",
-    quality: "standard",
-    n: 1,
-  });
+  // Retry с экспоненциальной задержкой — DALL-E периодически отдаёт 500
+  const maxRetries = 3;
+  let lastError = null;
+  let response = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      response = await client.images.generate({
+        model: "dall-e-3",
+        prompt: safePrompt,
+        size: "1024x1024",
+        quality: "standard",
+        n: 1,
+      });
+      break; // успех — выходим из цикла
+    } catch (err) {
+      lastError = err;
+      const status = err?.status || err?.response?.status || 0;
+      const isRetryable = status >= 500 || status === 429 || status === 0;
+      console.warn(`⚠️ DALL-E попытка ${attempt}/${maxRetries} провалилась [status:${status}]: ${err?.message}`);
+
+      if (!isRetryable || attempt === maxRetries) {
+        throw err; // пробрасываем выше
+      }
+
+      // Ждём перед повтором: 1.5s, 4s
+      const delay = attempt * 1500 + Math.random() * 1000;
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+
+  if (!response) throw lastError || new Error("DALL-E failed without response");
 
   const tempUrl = response.data[0].url;
   console.log("✅ Изображение готово, загружаю на Cloudinary...");
