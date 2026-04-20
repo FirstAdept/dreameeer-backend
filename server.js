@@ -10,6 +10,27 @@ const { analyzeDream, generateImage, createVideoTask, checkVideoStatus } = requi
 const app = express();
 app.use(cors());
 app.use(express.json());
+// Доверяем первому прокси (Railway) — чтобы req.ip возвращал реальный IP клиента
+app.set('trust proxy', 1);
+
+// Регионы, где разрешена оплата через ЮKassa (соответствует условиям GP для РФ)
+const ALLOWED_PAYMENT_REGIONS = new Set(["RU", "BY"]);
+
+// Грубое определение региона клиента на бэкенде.
+// Используем Accept-Language + CF-IPCountry (если есть) + client-side region из body.
+function detectClientRegion(req, bodyRegion) {
+  // 1. Cloudflare-style header (если появится прокси)
+  const cf = (req.headers["cf-ipcountry"] || "").toString().trim().toUpperCase();
+  if (cf && cf !== "XX") return cf;
+  // 2. Явное поле region из клиента (не доверяем слепо — только как подсказка)
+  if (bodyRegion && /^[A-Z]{2}$/.test(bodyRegion)) return bodyRegion;
+  // 3. Accept-Language
+  const al = (req.headers["accept-language"] || "").toString().toLowerCase();
+  if (/\brU(\b|-|_)/i.test(al) || al.startsWith("ru") || al.includes("-ru"))
+    return "RU";
+  if (al.startsWith("be") || al.includes("-by")) return "BY";
+  return "OTHER";
+}
 
 const PORT = process.env.PORT || 3000;
 const FREE_DREAMS_LIMIT = 1;
@@ -180,8 +201,21 @@ app.post("/api/user/init", async (req, res) => {
 // POST /api/payment/create — создать платёж ЮKassa
 app.post("/api/payment/create", async (req, res) => {
   try {
-    const { deviceId, email } = req.body;
+    const { deviceId, email, region: clientRegion } = req.body;
     if (!deviceId) return res.status(400).json({ error: "deviceId required" });
+
+    // Гео-гейт: ЮKassa разрешена только для RU/BY.
+    // Исключение Google для РФ-разработчиков работает ТОЛЬКО для пользователей в РФ.
+    // Немецкий / американский юзер через ЮKassa = нарушение политики.
+    const region = detectClientRegion(req, clientRegion);
+    if (!ALLOWED_PAYMENT_REGIONS.has(region)) {
+      console.log(`🚫 Payment blocked (region=${region}) for deviceId=${deviceId}`);
+      return res.status(403).json({
+        error: "region_not_supported",
+        message: "Subscription is not available in your region.",
+        region,
+      });
+    }
 
     if (!process.env.YOOKASSA_SHOP_ID || !process.env.YOOKASSA_SECRET_KEY) {
       return res.status(503).json({ error: "Payment system not configured. Add YOOKASSA_SHOP_ID and YOOKASSA_SECRET_KEY to env." });
@@ -191,7 +225,7 @@ app.post("/api/payment/create", async (req, res) => {
       "199.00",
       email || null,
       "Подписка Dreameeer на 30 дней",
-      { deviceId }
+      { deviceId, region }
     );
 
     console.log("💳 ЮKassa payment created:", payment.id, payment.status);
