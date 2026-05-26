@@ -13,17 +13,21 @@ cloudinary.config({
   secure: true,
 });
 
-async function uploadToCloudinary(tempUrl) {
+async function uploadToCloudinary(source) {
+  // gpt-image-1 отдаёт base64 — оборачиваем в data-URI; готовый URL/data-URI заливаем как есть
+  const payload = /^(https?:|data:)/i.test(source)
+    ? source
+    : `data:image/png;base64,${source}`;
   try {
-    const result = await cloudinary.uploader.upload(tempUrl, {
+    const result = await cloudinary.uploader.upload(payload, {
       folder: "dreameeer",
       resource_type: "image",
     });
     console.log("☁️ Cloudinary OK:", result.secure_url.slice(0, 60));
     return result.secure_url;
   } catch (err) {
-    console.warn("⚠️ Cloudinary upload failed, using temp URL:", err.message);
-    return tempUrl; // fallback — лучше временный URL, чем ничего
+    console.warn("⚠️ Cloudinary upload failed, using data-URI fallback:", err.message);
+    return payload; // fallback — data-URI рендерится в <img>, лучше чем ничего
   }
 }
 
@@ -166,7 +170,7 @@ const moodVideoStyles = {
   'default': 'CINEMATIC depth-of-field video — slow push-in toward the sharp vivid main dream object in foreground, deep purple and midnight blue atmospheric bokeh behind. Subject bold and clear. Surreal dream mood, cinematic quality. ',
 };
 
-// ===== DALL-E 3: ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЯ =====
+// ===== gpt-image-1: ГЕНЕРАЦИЯ ИЗОБРАЖЕНИЯ =====
 async function generateImage(prompt, theme = 'dark', mood = '') {
   const client = new OpenAI({ apiKey: OPENAI_API_KEY });
   console.log(`🎨 Генерирую изображение [mood:${mood}, theme:${theme}]...`);
@@ -183,7 +187,7 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
     safePrompt = `${moodStyle} Cinematic dramatic lighting, rich saturated colors, sharp contrast. SCENE ELEMENTS: ${cleaned}. No real people, no children, no faces. Abstract symbolic imagery only. Safe for all audiences.`;
   }
 
-  // Retry с экспоненциальной задержкой — DALL-E периодически отдаёт 500
+  // Retry с экспоненциальной задержкой — image API периодически отдаёт 500
   const maxRetries = 3;
   let lastError = null;
   let response = null;
@@ -191,10 +195,10 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       response = await client.images.generate({
-        model: "dall-e-3",
+        model: "gpt-image-1",
         prompt: safePrompt,
         size: "1024x1024",
-        quality: "standard",
+        quality: "medium",
         n: 1,
       });
       break; // успех — выходим из цикла
@@ -202,7 +206,7 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
       lastError = err;
       const status = err?.status || err?.response?.status || 0;
       const isRetryable = status >= 500 || status === 429 || status === 0;
-      console.warn(`⚠️ DALL-E попытка ${attempt}/${maxRetries} провалилась [status:${status}]: ${err?.message}`);
+      console.warn(`⚠️ gpt-image-1 попытка ${attempt}/${maxRetries} провалилась [status:${status}]: ${err?.message}`);
 
       if (!isRetryable || attempt === maxRetries) {
         throw err; // пробрасываем выше
@@ -214,11 +218,13 @@ async function generateImage(prompt, theme = 'dark', mood = '') {
     }
   }
 
-  if (!response) throw lastError || new Error("DALL-E failed without response");
+  if (!response) throw lastError || new Error("gpt-image-1 failed without response");
 
-  const tempUrl = response.data[0].url;
+  // gpt-image-1 всегда возвращает base64, а не url
+  const b64 = response.data?.[0]?.b64_json;
+  if (!b64) throw new Error("gpt-image-1 не вернул b64_json");
   console.log("✅ Изображение готово, загружаю на Cloudinary...");
-  return await uploadToCloudinary(tempUrl);
+  return await uploadToCloudinary(b64);
 }
 
 // ===== REPLICATE: ОЖИВЛЕНИЕ ИЗОБРАЖЕНИЯ (Kling image-to-video) =====
